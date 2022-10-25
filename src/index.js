@@ -7,6 +7,7 @@ import levenSort from 'leven-sort';
 import _isUndefined from 'lodash/isUndefined';
 import _isPlainObject from 'lodash/isPlainObject';
 
+import jsonFile from 'data/Zeta-Alpha_ICLR2021.json';
 import {
   ConfigStoreContext, ClusteringStoreContext, FileDataStoreContext, LayoutStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext, WebworkerStoreContext
 } from 'store/stores';
@@ -14,6 +15,8 @@ import VOSviewerApp from './VOSviewerApp';
 import DimensionsApp from './DimensionsApp';
 import ZetaAlphaApp from './ZetaAlphaApp';
 import RoRIApp from './RoRIApp';
+
+
 
 const root = document.createElement('div');
 document.body.appendChild(root);
@@ -38,9 +41,51 @@ const APP = observer(() => {
     clusteringStore.updateStore(configStore);
   }
 
+  const compute = () => {
+    const jsonData = visualizationStore.getJsonData(
+      fileDataStore.getTerminology(),
+      fileDataStore.getTemplates(),
+      fileDataStore.getStyles(),
+      fileDataStore.parameters,
+      fileDataStore.getColorSchemes(),
+      fileDataStore.getClusters()
+    );
+    console.log('VOS VIEWER jsonData: ', jsonData);
+    // store data for 'go Back' button
+    const dummyJsonObject = JSON.stringify(['test']);
+    fileDataStore.setPreviousJsonData(jsonData);
+    // const newData = {url: ..., method: POST, body: jsonData}
+
+    const newData = jsonData;
+    webworkerStore.openJsonFile(jsonFile, false);
+  };
+
+  const handleGoBack = () => {
+    // access previously stored data
+    const oldData = fileDataStore.getPreviousJsonData();
+    console.log('VOS VIEWER previous json file data: ', oldData);
+    // const oldData = ....
+    webworkerStore.openJsonFile(oldData, false);
+  };
+
   useEffect(() => {
+    window.addEventListener('message', (ev) => {
+      // if (ev.origin === 'http://localhost:3000/') {
+      console.log('VOS viewer', ev.data);
+      if (ev.data === 'test message on') {
+        compute();
+        console.log('VOS viewer on: ev:', ev.data);
+      }
+      if (ev.data === 'test message off') {
+        handleGoBack();
+        console.log('VOS viewer off: ev:', ev.data);
+      }
+    }, false);
+
+
     webworkerStore.addWorkerEventListener(d => {
       const { type, data } = d;
+
       // Replay worker messages into parent window for iframe --> page communication.
       window.parent.postMessage(JSON.stringify({ type, data }), "*");
       switch (type) {
