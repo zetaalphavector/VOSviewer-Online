@@ -16,8 +16,6 @@ import DimensionsApp from './DimensionsApp';
 import ZetaAlphaApp from './ZetaAlphaApp';
 import RoRIApp from './RoRIApp';
 
-
-
 const root = document.createElement('div');
 document.body.appendChild(root);
 
@@ -41,7 +39,7 @@ const APP = observer(() => {
     clusteringStore.updateStore(configStore);
   }
 
-  const compute = () => {
+  const compute = (origin) => {
     const jsonData = visualizationStore.getJsonData(
       fileDataStore.getTerminology(),
       fileDataStore.getTemplates(),
@@ -51,34 +49,41 @@ const APP = observer(() => {
       fileDataStore.getClusters()
     );
     console.log('VOS VIEWER jsonData: ', jsonData);
-    // store data for 'go Back' button
-    const dummyJsonObject = JSON.stringify(['test']);
+    // store data
     fileDataStore.setPreviousJsonData(jsonData);
-    // const newData = {url: ..., method: POST, body: jsonData}
+    const baseUrl = (origin.includes("localhost") || origin.includes("search-staging") ) ? 'https://api-staging.zeta-alpha.com' : 'https://api.zeta-alpha.com';
+    const newData = { url: `${baseUrl}/v0/service/documents/document/vos-cluster-titles`, method: 'POST', body: JSON.stringify(jsonData) };
 
-    const newData = jsonData;
-    webworkerStore.openJsonFile(jsonFile, false);
+    // const newData = jsonFile;
+    webworkerStore.openJsonFile(newData, false);
   };
 
   const handleGoBack = () => {
     // access previously stored data
     const oldData = fileDataStore.getPreviousJsonData();
     console.log('VOS VIEWER previous json file data: ', oldData);
-    // const oldData = ....
     webworkerStore.openJsonFile(oldData, false);
+  };
+
+  const isAcceptableUrl = (url) => {
+    const accaptedOrigins = ['http://localhost:3000', 'https://search-staging.zeta-alpha.com', 'https://search.zeta-alpha.com'];
+    const regex = /https:\/\/search-staging-pr-\d+.zeta-alpha.com/g;
+    return accaptedOrigins.includes(url) || !!url.match(regex);
   };
 
   useEffect(() => {
     window.addEventListener('message', (ev) => {
-      // if (ev.origin === 'http://localhost:3000/') {
-      console.log('VOS viewer', ev.data);
-      if (ev.data === 'generate cluster titles') {
-        compute();
-        console.log('VOS viewer on: ev:', ev.data);
-      }
-      if (ev.data === 'go back to previous titles') {
-        handleGoBack();
-        console.log('VOS viewer off: ev:', ev.data);
+      console.log('VOS VIEWER ev.origin', ev.origin, typeof ev.origin);
+      if (isAcceptableUrl(ev.origin)) {
+        console.log('VOS viewer', ev.data);
+        if (ev.data === 'generate cluster titles') {
+          compute(ev.origin);
+          console.log('VOS viewer on: ev:', ev.data);
+        }
+        if (ev.data === 'go back to previous titles') {
+          handleGoBack();
+          console.log('VOS viewer off: ev:', ev.data);
+        }
       }
     }, false);
 
