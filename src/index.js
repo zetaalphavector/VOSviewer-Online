@@ -72,11 +72,11 @@ const APP = observer(() => {
     window.addEventListener('message', (ev) => {
       // if (ev.origin === 'http://localhost:3000/') {
       console.log('VOS viewer', ev.data);
-      if (ev.data === 'test message on') {
+      if (ev.data === 'generate cluster titles') {
         compute();
         console.log('VOS viewer on: ev:', ev.data);
       }
-      if (ev.data === 'test message off') {
+      if (ev.data === 'go back to previous titles') {
         handleGoBack();
         console.log('VOS viewer off: ev:', ev.data);
       }
