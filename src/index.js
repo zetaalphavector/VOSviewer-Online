@@ -7,7 +7,6 @@ import levenSort from 'leven-sort';
 import _isUndefined from 'lodash/isUndefined';
 import _isPlainObject from 'lodash/isPlainObject';
 
-import jsonFile from 'data/Zeta-Alpha_ICLR2021.json';
 import {
   ConfigStoreContext, ClusteringStoreContext, FileDataStoreContext, LayoutStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext, WebworkerStoreContext
 } from 'store/stores';
@@ -48,20 +47,16 @@ const APP = observer(() => {
       fileDataStore.getColorSchemes(),
       fileDataStore.getClusters()
     );
-    console.log('VOS VIEWER jsonData: ', jsonData);
-    // store data
+
     fileDataStore.setPreviousJsonData(jsonData);
     const baseUrl = (origin.includes("localhost") || origin.includes("search-staging") ) ? 'https://api-staging.zeta-alpha.com' : 'https://api.zeta-alpha.com';
     const newData = { url: `${baseUrl}/v0/service/documents/document/vos-cluster-titles`, method: 'POST', body: JSON.stringify(jsonData) };
 
-    // const newData = jsonFile;
     webworkerStore.openJsonFile(newData, false);
   };
 
   const handleGoBack = () => {
-    // access previously stored data
     const oldData = fileDataStore.getPreviousJsonData();
-    console.log('VOS VIEWER previous json file data: ', oldData);
     webworkerStore.openJsonFile(oldData, false);
   };
 
@@ -73,16 +68,12 @@ const APP = observer(() => {
 
   useEffect(() => {
     window.addEventListener('message', (ev) => {
-      console.log('VOS VIEWER ev.origin', ev.origin, typeof ev.origin);
       if (isAcceptableUrl(ev.origin)) {
-        console.log('VOS viewer', ev.data);
         if (ev.data === 'generate cluster titles') {
           compute(ev.origin);
-          console.log('VOS viewer on: ev:', ev.data);
         }
         if (ev.data === 'go back to previous titles') {
           handleGoBack();
-          console.log('VOS viewer off: ev:', ev.data);
         }
       }
     }, false);
