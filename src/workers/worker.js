@@ -182,12 +182,8 @@ function _parseJsonFile(jsonFileOrUrl) {
           data: { fileError },
         });
       };
-    } else if (jsonFileOrUrl instanceof Object) {
-      _parseJson(jsonFileOrUrl);
-      // check for specific fields
-      // if it has fields (url, method, body)
-      // fetch(jsonFileOrUrl.url, {method: ..., body: ...(stringify)})
-      fetch(jsonFileOrUrl, { credentials: "include" })
+    } else if (jsonFileOrUrl instanceof Object && jsonFileOrUrl.url) {
+      fetch(jsonFileOrUrl.url, { credentials: "include", method: jsonFileOrUrl.method, body: jsonFileOrUrl.body })
         .then(response => {
           if (!response.ok) {
             if (response.status === 404) {
@@ -208,6 +204,8 @@ function _parseJsonFile(jsonFileOrUrl) {
             data: { fileError },
           });
         });
+    } else if (jsonFileOrUrl instanceof Object && !jsonFileOrUrl.url) {
+      _parseJson(jsonFileOrUrl);
     } else {
       fetch(jsonFileOrUrl, { credentials: "include" })
         .then(response => {
