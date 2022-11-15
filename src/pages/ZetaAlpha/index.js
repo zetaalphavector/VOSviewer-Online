@@ -193,13 +193,13 @@ const ZetaAlpha = observer(({ queryString }) => {
         <CssBaseline />
         <VisualizationComponent customFont={configStore.uiStyle.font_family} />
         <img
-          className={s.zetaalphaLogo}
+          className={s.vosviewerLogo}
           src={uiStore.darkTheme ? vosviewerLogoDarkLowRes : vosviewerLogoLowRes}
           srcSet={`${uiStore.darkTheme ? vosviewerLogoDarkHighRes : vosviewerLogoHighRes} 2x`}
           alt="VOSviewer"
           ref={vosviewerLogoEl}
         />
-        <img className={s.vosviewerLogo} src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} alt="Zeta Alpha" ref={zetaalphaLogoEl} />
+        <img className={s.zetaalphaLogo} src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} alt="Zeta Alpha" ref={zetaalphaLogoEl} />
         <div className={`${s.actionIcons(configStore.urlPreviewPanelWidth)} ${configStore.urlPreviewPanel ? s.previewIsOpen : ''}`}>
           <Open />
           <Save />
