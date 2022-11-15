@@ -29,12 +29,12 @@ export const vosviewerLogo = css`
   label: vosviewer-logo;
   position: absolute;
   height: 22px;
-  margin: 15px;
+  opacity: 0;
 `;
 
 export const zetaalphaLogo = css`
   label: zetaalpha-logo;
   position: absolute;
   height: 22px;
-  opacity: 0;
+  margin: 15px;
 `;
