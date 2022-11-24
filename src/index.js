@@ -141,7 +141,7 @@ const APP = observer(() => {
           }
           break;
         case 'end handle unconnected items':
-          if (data.mapData && data.networkData && data.itemIdToIndex) {
+          if (data.mapData && data.networkData && data.itemIdToIndex && !fileDataStore.coordinatesAreAvailable) {
             fileDataStore.setMapData(data.mapData);
             fileDataStore.setNetworkData(data.networkData);
             visualizationStore.setItemIdToIndex(data.itemIdToIndex);
