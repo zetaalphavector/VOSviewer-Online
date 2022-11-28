@@ -3,6 +3,8 @@ import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
 import { addHook, sanitize } from "dompurify";
 import { css } from 'emotion';
 
+const ALLOWED_TAGS_IN_HTML_STRING = ["p", "a", "br", "b", "i"]
+
 export function parseDescription(object, templateType, stores) {
   const { fileDataStore, visualizationStore } = stores;
   if (!object) return;
@@ -24,7 +26,12 @@ export function parseDescription(object, templateType, stores) {
       if (node.name === 'a' && node.attribs.href) node.attribs.href = _replaceDescriptionPlaceholders(node.attribs.href, object, templateType, visualizationStore);
       if (node.name === 'img' && node.attribs.src) node.attribs.src = _replaceDescriptionPlaceholders(node.attribs.src, object, templateType, visualizationStore);
     }
-    if (node.data) node.data = _replaceDescriptionPlaceholders(node.data, object, templateType, visualizationStore);
+    if (node.data) {
+      const html_data_string = _replaceDescriptionPlaceholders(node.data, object, templateType, visualizationStore)
+      node.data  = ReactHtmlParser(
+        sanitize(html_data_string, {ALLOWED_TAGS: ALLOWED_TAGS_IN_HTML_STRING})
+      );
+    }
 
     return convertNodeToElement(node, index, transformDescription);
   }
