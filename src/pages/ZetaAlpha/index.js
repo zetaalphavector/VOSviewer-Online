@@ -21,10 +21,6 @@ import ZoomPanel from 'components/ui/ZoomPanel';
 import ErrorDialog from 'components/ui/ErrorDialog';
 import UnconnectedItemsDialog from 'components/ui/UnconnectedItemsDialog';
 import LoadingScreen from 'components/ui/LoadingScreen';
-import vosviewerLogoLowRes from 'assets/images/vosviewer-logo-low-res.png';
-import vosviewerLogoHighRes from 'assets/images/vosviewer-logo-high-res.png';
-import vosviewerLogoDarkLowRes from 'assets/images/vosviewer-logo-dark-low-res.png';
-import vosviewerLogoDarkHighRes from 'assets/images/vosviewer-logo-dark-high-res.png';
 import zetaalphaLogo from 'assets/images/zeta-alpha-logo.svg';
 import zetaalphaLogoDark from 'assets/images/zeta-alpha-logo-dark.svg';
 
@@ -79,8 +75,8 @@ const ZetaAlpha = observer(({ queryString }) => {
   }, []);
 
   useEffect(() => {
-    visualizationStore.setGetLogoImages(() => ([vosviewerLogoEl.current, zetaalphaLogoEl.current]));
-  }, [vosviewerLogoEl, zetaalphaLogoEl]);
+    visualizationStore.setGetLogoImages(() => ([zetaalphaLogoEl.current]));
+  }, [zetaalphaLogoEl]);
 
   const muiTheme = (isDark) => {
     const { uiStyle } = configStore;
@@ -194,8 +190,8 @@ const ZetaAlpha = observer(({ queryString }) => {
         <VisualizationComponent customFont={configStore.uiStyle.font_family} />
         <img
           className={s.vosviewerLogo}
-          src={uiStore.darkTheme ? vosviewerLogoDarkLowRes : vosviewerLogoLowRes}
-          srcSet={`${uiStore.darkTheme ? vosviewerLogoDarkHighRes : vosviewerLogoHighRes} 2x`}
+          src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo}
+          srcSet={`${uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} 2x`}
           alt="VOSviewer"
           ref={vosviewerLogoEl}
         />
