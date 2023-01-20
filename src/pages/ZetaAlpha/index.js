@@ -202,12 +202,16 @@ const ZetaAlpha = observer(({ queryString }) => {
         <img className={s.zetaalphaLogo} src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} alt="Zeta Alpha" ref={zetaalphaLogoEl} />
         <div className={`${s.actionIcons(configStore.urlPreviewPanelWidth)} ${configStore.urlPreviewPanel ? s.previewIsOpen : ''}`}>
           <Open />
-          <Save />
-          <Share />
-          <Screenshot />
-          <DarkLightTheme />
+          {configStore.fullscreen && (
+          <>
+            <Save />
+            <Share />
+            <Screenshot />
+            <DarkLightTheme />
+            <Info />
+          </>
+          )}
           <Fullscreen />
-          <Info />
         </div>
         <URLPanel />
         <LegendPanel />
