@@ -164,7 +164,6 @@ self.addEventListener("message", event => {
 });
 
 function _parseJsonFile(jsonFileOrUrl, authToken) {
-  console.log("FOOO", authToken)
   if (jsonFileOrUrl) {
     self.postMessage({
       type: 'update loading screen',
