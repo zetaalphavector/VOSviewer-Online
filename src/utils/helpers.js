@@ -28,6 +28,7 @@ export function parseQueryString(queryString) {
     const value = _parseQueryStringValue(parsedQueryString[key]);
     switch (key) {
       // Data.
+      case parameterKeys.AUTH_TOKEN:
       case parameterKeys.JSON:
       case parameterKeys.MAP:
       case parameterKeys.NETWORK:

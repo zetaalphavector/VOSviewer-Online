@@ -33,7 +33,7 @@ self.addEventListener("message", event => {
       networkNormalizer.performNormalization(options.normalizationMethod);
       break;
     case 'start parse vosviewer-json file':
-      _parseJsonFile(options.jsonFileOrUrl);
+      _parseJsonFile(options.jsonFileOrUrl, options.authToken);
       break;
     case 'start parse vosviewer-map-network file':
       _parseMapNetworkFile(options.mapFileOrUrl, options.networkFileOrUrl);
@@ -163,7 +163,8 @@ self.addEventListener("message", event => {
   }
 });
 
-function _parseJsonFile(jsonFileOrUrl) {
+function _parseJsonFile(jsonFileOrUrl, authToken) {
+  console.log("FOOO", authToken)
   if (jsonFileOrUrl) {
     self.postMessage({
       type: 'update loading screen',
@@ -183,7 +184,7 @@ function _parseJsonFile(jsonFileOrUrl) {
         });
       };
     } else if (jsonFileOrUrl instanceof Object && jsonFileOrUrl.url) {
-      fetch(jsonFileOrUrl.url, { credentials: "include", method: jsonFileOrUrl.method, body: jsonFileOrUrl.body })
+      fetch(jsonFileOrUrl.url, {...((!!authToken)?{headers: {Authorization: `Bearer ${authToken}`}}:{}), credentials: "include", method: jsonFileOrUrl.method, body: jsonFileOrUrl.body })
         .then(response => {
           if (!response.ok) {
             if (response.status === 404) {
@@ -207,7 +208,7 @@ function _parseJsonFile(jsonFileOrUrl) {
     } else if (jsonFileOrUrl instanceof Object && !jsonFileOrUrl.url) {
       _parseJson(jsonFileOrUrl);
     } else {
-      fetch(jsonFileOrUrl, { credentials: "include" })
+      fetch(jsonFileOrUrl, {...((!!authToken)?{headers: {Authorization: `Bearer ${authToken}`}}:{}), credentials: "include" })
         .then(response => {
           if (!response.ok) {
             if (response.status === 404) {
