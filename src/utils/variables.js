@@ -171,6 +171,7 @@ export const colorSchemes = {
 export const parameterKeys = {
   // Data.
   JSON: 'json',
+  AUTH_TOKEN: 'auth_token',
   MAP: 'map',
   NETWORK: 'network',
   // Layout and clustering.
