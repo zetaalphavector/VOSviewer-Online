@@ -62,8 +62,9 @@ const APP = observer(() => {
 
   const isAcceptableUrl = (url) => {
     const accaptedOrigins = ['http://localhost:3000', 'https://search-staging.zeta-alpha.com', 'https://search.zeta-alpha.com'];
-    const regex = /https:\/\/search-staging-pr-\d+.zeta-alpha.com/g;
-    return accaptedOrigins.includes(url) || !!url.match(regex);
+    const prRegex = /https:\/\/search-staging-pr-\d+.zeta-alpha.com/g;
+    const tenantRegex = /https:\/\/.+-search.zeta-alpha.com/g;
+    return accaptedOrigins.includes(url) || !!url.match(prRegex)|| !!url.match(tenantRegex);
   };
 
   useEffect(() => {
