@@ -183,7 +183,7 @@ function _parseJsonFile(jsonFileOrUrl, authToken) {
         });
       };
     } else if (jsonFileOrUrl instanceof Object && jsonFileOrUrl.url) {
-      fetch(jsonFileOrUrl.url, {...((!!authToken)?{headers: {Authorization: `Bearer ${authToken}`}}:{}), credentials: "include", method: jsonFileOrUrl.method, body: jsonFileOrUrl.body })
+      fetch(jsonFileOrUrl.url, {...((!!authToken&&jsonFileOrUrl.url.includes('zeta-alpha.com'))?{headers: {Authorization: `Bearer ${authToken}`}}:{}), credentials: "include", method: jsonFileOrUrl.method, body: jsonFileOrUrl.body })
         .then(response => {
           if (!response.ok) {
             if (response.status === 404) {
@@ -207,7 +207,7 @@ function _parseJsonFile(jsonFileOrUrl, authToken) {
     } else if (jsonFileOrUrl instanceof Object && !jsonFileOrUrl.url) {
       _parseJson(jsonFileOrUrl);
     } else {
-      fetch(jsonFileOrUrl, {...((!!authToken)?{headers: {Authorization: `Bearer ${authToken}`}}:{}), credentials: "include" })
+      fetch(jsonFileOrUrl, {...((!!authToken&&jsonFileOrUrl.includes('zeta-alpha.com'))?{headers: {Authorization: `Bearer ${authToken}`}}:{}), credentials: "include" })
         .then(response => {
           if (!response.ok) {
             if (response.status === 404) {
