@@ -16,10 +16,12 @@ export const DynamicArticle = ({ item }) => {
 
   const fallback = useMemo(() => getPaperImgBySource(source), [source]);
 
+  const isShowPureImage = !image && !logo && !!imgUrl;
+
   return (
     <div className={styles.DynamicArticle}>
       <div className={styles.ImageDynamicArticle}>
-        {imgUrl
+        {isShowPureImage
           ? <AdaptiveImage src={imgUrl} fallback={fallback} alt={title} />
           : <DocImageContent alt={title} initials={initials} image={image} logo={logo} fallback={fallback} />}
       </div>

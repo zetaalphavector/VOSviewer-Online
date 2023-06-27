@@ -7,6 +7,7 @@ export const DynamicArticle = css`
 export const ImageDynamicArticle = css`
   width: 120px;
   display: block;
+  position: relative;
 `;
 
 export const DescriptionDynamicArticle = css`
@@ -25,12 +26,20 @@ export const FallBackImage = css`
 `;
 
 export const Avatar = css`
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   margin-left: auto;
   margin-right: 0;
-  top: -1rem;
+  bottom: 2px;
+  right: 2px;
   background-color: #1976d2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 14pt;
+  position: absolute;
 `;
 
 export const AdaptiveImage = css`

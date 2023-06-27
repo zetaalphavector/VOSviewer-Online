@@ -1,3 +1,10 @@
+import tds from 'assets/images/tds-logo.png';
+import iclr from 'assets/images/iclr-logo.png';
+import arxiv from 'assets/images/arxiv-logo.png';
+import neurips from 'assets/images/neurips-logo.png';
+import citation from 'assets/images/citation-source.png';
+import noImg from 'assets/images/no-img-source.png';
+
 export const getPaperImgDimensions = (
   { width: wrapperWidth },
   { height: imgHeight, width: imgWidth },
@@ -30,12 +37,12 @@ export const getInitialsFromName = (name) => {
 };
 
 export const ImagesMap = {
-  'Towards Data Science': '/assets/images/tds-logo.png',
-  ICLR: '/assets/images/iclr-logo.png',
-  arXiv: '/assets/images/arxiv-logo.png',
-  'Advances in Neural Information Processing Systems': '/assets/images/neurips-logo.png',
-  Unknown: '/assets/images/citation-source.png',
-  Default: '/assets/images/no-img-source.png',
+  'Towards Data Science': tds,
+  ICLR: iclr,
+  arXiv: arxiv,
+  'Advances in Neural Information Processing Systems': neurips,
+  Unknown: citation,
+  Default: noImg,
 };
 
 export const DEFAULT_IMAGE = ImagesMap.Default;

@@ -20,7 +20,6 @@ export const useResource = (url) => {
 
   const abort = useCallback(() => {
     if (controller) {
-      console.log('abort');
       controller.abort();
     }
   }, [controller]);
@@ -32,7 +31,6 @@ export const useResource = (url) => {
       const { signal } = _controller;
       const response = await fetch(url, { signal });
       const data = await response.json();
-      console.log('data ->', data);
       setData(data);
     } catch (error) {
       setError(error);

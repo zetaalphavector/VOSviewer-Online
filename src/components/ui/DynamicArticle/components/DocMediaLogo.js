@@ -24,7 +24,9 @@ export const DocMediaLogo = ({
       alt={alt}
     >
       {initials && (
-        <div className={styles.Avatar}>{initials}</div>
+        <div className={styles.Avatar}>
+          {initials}
+        </div>
       )}
     </AdaptiveImage>
   );
