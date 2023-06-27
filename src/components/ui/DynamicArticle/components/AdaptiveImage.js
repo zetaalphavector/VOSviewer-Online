@@ -70,7 +70,7 @@ export const AdaptiveImage = ({
       <img
         ref={imgRef}
         src={link}
-        alt={alt ?? 'document img'}
+        alt={alt ?? 'document image'}
         style={imgStyles}
         onLoad={setStyles}
         className={`${styles.Img} ${className} ${isFallback ? styles.FallBackImage : ''}`}

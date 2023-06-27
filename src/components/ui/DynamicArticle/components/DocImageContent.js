@@ -1,20 +1,18 @@
-import React, { useMemo } from 'react';
-import { getPaperImgBySource } from "../utils";
+import React from 'react';
 import { DocMediaImage } from "./DocMediaImage";
 import { DocMediaLogo } from "./DocMediaLogo";
 import { AdaptiveImage } from "./AdaptiveImage";
 
 
 export const DocImageContent = ({
-  image, logo, source, initials
+  image, logo, fallback, initials, alt
 }) => {
-  const fallback = useMemo(() => getPaperImgBySource(source), [source]);
-
   if (image) {
     return (
       <DocMediaImage
         image={image}
         fallback={fallback}
+        alt={alt}
       />
     );
   }
@@ -25,6 +23,7 @@ export const DocImageContent = ({
         logo={logo}
         fallback={fallback}
         initials={initials}
+        alt={alt}
       />
     );
   }
@@ -33,6 +32,7 @@ export const DocImageContent = ({
     <AdaptiveImage
       src={fallback}
       fallback={fallback}
+      alt={alt}
     />
   );
 };

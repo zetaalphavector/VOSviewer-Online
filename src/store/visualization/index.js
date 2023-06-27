@@ -211,6 +211,7 @@ export default class State {
       item.img_url = undefined;
       item.source = 'arXiv';
       item.image_url = 'https://api-staging.zeta-alpha.com/v0/service/document-assets/43854e949f912d725fa9a6df29905e1ca9ddbbef/image_url?tenant=zetaalpha';
+      console.log('item ->', item);
     });
 
     this.itemsForLinks = {};

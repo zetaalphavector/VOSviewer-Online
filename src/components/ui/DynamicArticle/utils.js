@@ -30,12 +30,12 @@ export const getInitialsFromName = (name) => {
 };
 
 export const ImagesMap = {
-  'Towards Data Science': '/assets/img/tds-logo.png',
-  ICLR: '/assets/img/iclr-logo.png',
-  arXiv: '/assets/img/arxiv-logo.png',
-  'Advances in Neural Information Processing Systems': '/assets/img/neurips-logo.png',
-  Unknown: '/assets/img/citation-source.png',
-  Default: '/assets/img/no-img-source.png',
+  'Towards Data Science': '/assets/images/tds-logo.png',
+  ICLR: '/assets/images/iclr-logo.png',
+  arXiv: '/assets/images/arxiv-logo.png',
+  'Advances in Neural Information Processing Systems': '/assets/images/neurips-logo.png',
+  Unknown: '/assets/images/citation-source.png',
+  Default: '/assets/images/no-img-source.png',
 };
 
 export const DEFAULT_IMAGE = ImagesMap.Default;
