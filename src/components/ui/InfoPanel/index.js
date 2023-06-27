@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { IconButton, Link, Paper, Typography } from '@material-ui/core';
@@ -8,19 +7,22 @@ import _isNil from 'lodash/isNil';
 import _isNull from 'lodash/isNull';
 import _isUndefined from 'lodash/isUndefined';
 
-import { ConfigStoreContext, FileDataStoreContext, UiStoreContext, VisualizationStoreContext } from 'store/stores';
+import { ConfigStoreContext, FileDataStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext } from 'store/stores';
 import { trimTextEnd } from 'utils/helpers';
 import { parseDescription } from 'utils/helpers2';
 import * as s from './styles';
+import { DynamicArticle } from "../DynamicArticle";
 
 const InfoItem = ({ text }) => (<Typography component="p" className={s.infoItem}>{text}</Typography>);
 const Divider = () => <Typography component="p" className={s.divider}> | </Typography>;
 
 const InfoPanel = observer(() => {
   const configStore = useContext(ConfigStoreContext);
+  const queryStringStore = useContext(QueryStringStoreContext);
   const fileDataStore = useContext(FileDataStoreContext);
   const uiStore = useContext(UiStoreContext);
   const visualizationStore = useContext(VisualizationStoreContext);
+  const { hoveredItem, clickedItem, hoveredLink, clickedLink } = visualizationStore;
   const refEl = useRef(null);
   const [isOpen, setIsOpen] = useState(true);
 
@@ -28,16 +30,11 @@ const InfoPanel = observer(() => {
     uiStore.setInfoPanelWidth(refEl.current.offsetWidth);
   }
 
-  useEffect(
-    () => {},
-    [visualizationStore.lastItemUpdate, visualizationStore.lastLinkUpdate]
-  );
-
   useEffect(() => {
-    if (visualizationStore.hoveredItem || visualizationStore.clickedItem || visualizationStore.hoveredLink || visualizationStore.clickedLink) {
+    if (hoveredItem || clickedItem || hoveredLink || clickedLink) {
       setIsOpen(true);
     }
-  }, [visualizationStore.hoveredItem, visualizationStore.clickedItem, visualizationStore.hoveredLink, visualizationStore.clickedLink]);
+  }, [hoveredItem, clickedItem, hoveredLink, clickedLink]);
 
   const exitInfoPanel = () => {
     setIsOpen(!isOpen);
@@ -55,6 +52,7 @@ const InfoPanel = observer(() => {
     if (!visualizationStore.scoreKeys.length) return;
     const text = visualizationStore.scoreKeys[visualizationStore.scoreIndex];
     const findMatch = text && text.match(/<(.*)>/);
+    // eslint-disable-next-line consistent-return
     return findMatch ? findMatch[1] : text;
   };
 
@@ -162,15 +160,17 @@ const InfoPanel = observer(() => {
   const showDescriptionContent = () => isOpen
       && configStore.uiConfig.description_panel
       && (
-        (visualizationStore.hoveredItem && visualizationStore.hoveredItem.description)
-        || (visualizationStore.clickedItem && visualizationStore.clickedItem.description)
-        || (visualizationStore.hoveredLink && visualizationStore.hoveredLink.description)
-        || (visualizationStore.clickedLink && visualizationStore.clickedLink.description)
-        || ((visualizationStore.hoveredItem || visualizationStore.clickedItem) && fileDataStore.templates.item_description)
-        || ((visualizationStore.hoveredLink || visualizationStore.clickedLink) && fileDataStore.templates.link_description)
+        (hoveredItem && hoveredItem.description)
+        || (clickedItem && clickedItem.description)
+        || (hoveredLink && hoveredLink.description)
+        || (clickedLink && clickedLink.description)
+        || ((hoveredItem || clickedItem) && fileDataStore.templates.item_description)
+        || ((hoveredLink || clickedLink) && fileDataStore.templates.link_description)
       );
 
-  const getItemDescription = (item) => parseDescription(item, 'item_description', { fileDataStore, visualizationStore });
+  const isDynamicArticle = (item) => item && ('image_url' in item || 'logo_url' in item);
+
+  const getItemDescription = (item) => (isDynamicArticle(item) ? <DynamicArticle item={item} /> : parseDescription(item, 'item_description', { fileDataStore, visualizationStore }));
 
   const getLinkDescription = (link) => parseDescription(link, 'link_description', { fileDataStore, visualizationStore });
 
@@ -188,10 +188,10 @@ const InfoPanel = observer(() => {
               && (
                 <>
                   <Typography component="div" className={s.description}>
-                    {getItemDescription(visualizationStore.hoveredItem)
-                      || getLinkDescription(visualizationStore.hoveredLink)
-                      || getItemDescription(visualizationStore.clickedItem)
-                      || getLinkDescription(visualizationStore.clickedLink)
+                    {getItemDescription(hoveredItem)
+                      || getLinkDescription(hoveredLink)
+                      || getItemDescription(clickedItem)
+                      || getLinkDescription(clickedLink)
                     }
                   </Typography>
                   {showInfoContent() && <hr />}
@@ -199,7 +199,7 @@ const InfoPanel = observer(() => {
               )
             }
             {showInfoContent()
-              && (visualizationStore.hoveredItem || visualizationStore.hoveredLink || visualizationStore.clickedItem || visualizationStore.clickedLink
+              && (hoveredItem || hoveredLink || clickedItem || clickedLink
                 ? getItemOrLinkInfo()
                 : (
                   <>

@@ -178,6 +178,10 @@ export default class State {
       item.id = _isNaN(_toNumber(item.id)) ? item.id : _toNumber(item.id);
       item.label = getLabelValue(item);
       item._normalizedScore = undefined;
+
+      // TODO: REMOVE BEFORE MERGE
+      item.source = 'arXiv';
+      item.image_url = 'image_url';
     });
 
     this.itemsForLinks = {};

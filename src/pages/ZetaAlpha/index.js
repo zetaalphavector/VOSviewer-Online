@@ -56,8 +56,8 @@ const ZetaAlpha = observer(({ queryString }) => {
     let mapURL = getProxyUrl(proxy, queryString[parameterKeys.MAP]);
     let networkURL = getProxyUrl(proxy, queryString[parameterKeys.NETWORK]);
     let jsonURL = getProxyUrl(proxy, queryString[parameterKeys.JSON]);
-    let authToken = queryString[parameterKeys.AUTH_TOKEN];
-    if (!!authToken){
+    const authToken = queryString[parameterKeys.AUTH_TOKEN];
+    if (authToken) {
       window.localStorage.setItem('token', authToken);
     }
     if (NODE_ENV === 'development' && !mapURL && !networkURL && !jsonURL) {
