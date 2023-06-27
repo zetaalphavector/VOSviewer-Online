@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { api } from "../../../../api/api";
 
 export const useResource = (url) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -29,8 +30,7 @@ export const useResource = (url) => {
       const _controller = new AbortController();
       setController(_controller);
       const { signal } = _controller;
-      const response = await fetch(url, { signal });
-      const data = await response.json();
+      const data = await api(url, { signal });
       setData(data);
     } catch (error) {
       setError(error);
