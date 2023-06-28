@@ -10,7 +10,7 @@ export const DynamicArticle = ({ item }) => {
   } = item;
 
   const initials = useMemo(
-    () => getInitialsFromName(authors[0]?.fullName),
+    () => getInitialsFromName(authors?.[0]?.fullName),
     [authors]
   );
 

@@ -1,6 +1,5 @@
 /* global CONFIG MODE */
 import React, { useContext, useEffect, useState } from 'react';
-// eslint-disable-next-line import/no-unresolved
 import { render } from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import levenSort from 'leven-sort';
@@ -8,7 +7,14 @@ import _isUndefined from 'lodash/isUndefined';
 import _isPlainObject from 'lodash/isPlainObject';
 
 import {
-  ConfigStoreContext, ClusteringStoreContext, FileDataStoreContext, LayoutStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext, WebworkerStoreContext
+  ClusteringStoreContext,
+  ConfigStoreContext,
+  FileDataStoreContext,
+  LayoutStoreContext,
+  QueryStringStoreContext,
+  UiStoreContext,
+  VisualizationStoreContext,
+  WebworkerStoreContext
 } from 'store/stores';
 import VOSviewerApp from './VOSviewerApp';
 import DimensionsApp from './DimensionsApp';
@@ -49,8 +55,12 @@ const APP = observer(() => {
     );
 
     fileDataStore.setPreviousJsonData(jsonData);
-    const baseUrl = (origin.includes("localhost") || origin.includes("search-staging") ) ? 'https://api-staging.zeta-alpha.com' : 'https://api.zeta-alpha.com';
-    const newData = { url: `${baseUrl}/v0/service/documents/document/vos-cluster-titles`, method: 'POST', body: JSON.stringify(jsonData) };
+    const baseUrl = (origin.includes("localhost") || origin.includes("search-staging")) ? 'https://api-staging.zeta-alpha.com' : 'https://api.zeta-alpha.com';
+    const newData = {
+      url: `${baseUrl}/v0/service/documents/document/vos-cluster-titles`,
+      method: 'POST',
+      body: JSON.stringify(jsonData)
+    };
 
     webworkerStore.openJsonFile(newData, false);
   };
@@ -115,7 +125,10 @@ const APP = observer(() => {
             if (_isPlainObject(fileDataStore.parameters)) {
               configStore.updateStore({ parameters: fileDataStore.parameters });
               uiStore.updateStore({ parameters: fileDataStore.parameters });
-              visualizationStore.updateStore({ parameters: fileDataStore.parameters, colorSchemes: fileDataStore.getColorSchemes() });
+              visualizationStore.updateStore({
+                parameters: fileDataStore.parameters,
+                colorSchemes: fileDataStore.getColorSchemes()
+              });
               layoutStore.updateStore({ parameters: fileDataStore.parameters });
               clusteringStore.updateStore({ parameters: fileDataStore.parameters });
             }
@@ -132,13 +145,23 @@ const APP = observer(() => {
 
           visualizationStore.setItemIdToIndex(data.itemIdToIndex);
           if (!_isUndefined(visualizationStore.largestComponent)) {
-            webworkerStore.startHandleUnconnectedItems({ unconnectedItemsDialogChoice: visualizationStore.largestComponent ? 'yes' : 'no', mapData: fileDataStore.mapData, networkData: fileDataStore.networkData, itemIdToIndex: visualizationStore.itemIdToIndex });
+            webworkerStore.startHandleUnconnectedItems({
+              unconnectedItemsDialogChoice: visualizationStore.largestComponent ? 'yes' : 'no',
+              mapData: fileDataStore.mapData,
+              networkData: fileDataStore.networkData,
+              itemIdToIndex: visualizationStore.itemIdToIndex
+            });
           } else if (!fileDataStore.coordinatesAreAvailable && data.hasUnconnectedItems) {
             uiStore.setUnconnectedItemsDialog(data.hasUnconnectedItems, data.nItemsNetwork, data.nItemsLargestComponent);
             uiStore.setUnconnectedItemsDialogIsOpen(true);
             uiStore.setLoadingScreenIsOpen(false);
           } else {
-            webworkerStore.startHandleUnconnectedItems({ unconnectedItemsDialogChoice: 'no', mapData: fileDataStore.mapData, networkData: fileDataStore.networkData, itemIdToIndex: visualizationStore.itemIdToIndex });
+            webworkerStore.startHandleUnconnectedItems({
+              unconnectedItemsDialogChoice: 'no',
+              mapData: fileDataStore.mapData,
+              networkData: fileDataStore.networkData,
+              itemIdToIndex: visualizationStore.itemIdToIndex
+            });
           }
           break;
         case 'end handle unconnected items':

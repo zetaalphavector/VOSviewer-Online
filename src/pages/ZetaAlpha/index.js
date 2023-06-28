@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { CssBaseline } from '@material-ui/core';
-import { ThemeProvider, createTheme } from '@material-ui/core/styles';
+import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import _isPlainObject from 'lodash/isPlainObject';
 
 import VisualizationComponent from 'components/visualization/VisualizationComponent';
@@ -25,10 +25,16 @@ import zetaalphaLogo from 'assets/images/zeta-alpha-logo.svg';
 import zetaalphaLogoDark from 'assets/images/zeta-alpha-logo-dark.svg';
 
 import {
-  ClusteringStoreContext, ConfigStoreContext, LayoutStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext, WebworkerStoreContext
+  ClusteringStoreContext,
+  ConfigStoreContext,
+  LayoutStoreContext,
+  QueryStringStoreContext,
+  UiStoreContext,
+  VisualizationStoreContext,
+  WebworkerStoreContext
 } from 'store/stores';
 import { getProxyUrl } from 'utils/helpers';
-import { parameterKeys, panelBackgroundColors, visualizationBackgroundColors } from 'utils/variables';
+import { panelBackgroundColors, parameterKeys, visualizationBackgroundColors } from 'utils/variables';
 import * as s from './style';
 
 const ZetaAlpha = observer(({ queryString }) => {
@@ -199,17 +205,24 @@ const ZetaAlpha = observer(({ queryString }) => {
           alt="VOSviewer"
           ref={vosviewerLogoEl}
         />
-        <img className={s.zetaalphaLogo} src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} alt="Zeta Alpha" ref={zetaalphaLogoEl} />
-        <div className={`${s.actionIcons(configStore.urlPreviewPanelWidth)} ${configStore.urlPreviewPanel ? s.previewIsOpen : ''}`}>
+        <img
+          className={s.zetaalphaLogo}
+          src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo}
+          alt="Zeta Alpha"
+          ref={zetaalphaLogoEl}
+        />
+        <div
+          className={`${s.actionIcons(configStore.urlPreviewPanelWidth)} ${configStore.urlPreviewPanel ? s.previewIsOpen : ''}`}
+        >
           <Open />
           {configStore.fullscreen && (
-          <>
-            <Save />
-            <Share />
-            <Screenshot />
-            <DarkLightTheme />
-            <Info />
-          </>
+            <>
+              <Save />
+              <Share />
+              <Screenshot />
+              <DarkLightTheme />
+              <Info />
+            </>
           )}
           <Fullscreen />
         </div>
