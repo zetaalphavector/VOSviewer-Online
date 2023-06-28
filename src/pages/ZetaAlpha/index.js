@@ -65,6 +65,8 @@ const ZetaAlpha = observer(({ queryString }) => {
     const authToken = queryString[parameterKeys.AUTH_TOKEN];
     if (authToken) {
       window.localStorage.setItem('token', authToken);
+    } else {
+      window.localStorage.removeItem('token');
     }
     if (NODE_ENV === 'development' && !mapURL && !networkURL && !jsonURL) {
       jsonURL = 'data/Zeta-Alpha_ICLR2021.json';
