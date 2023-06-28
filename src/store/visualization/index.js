@@ -21,11 +21,31 @@ import _isNaN from 'lodash/isNaN';
 import _uniq from 'lodash/uniq';
 
 import {
-  canvasMargin, clusterColors, circleColors, circleMinDiameter, circleAvgDiameter, lineMinWidth, lineAvgWidth, labelMinFontSize, labelFontSizeScalingConstant, mapFileHeaders, scoreColorLegendPropScoresBetweenMinAndMax, scoreColorLegendDesiredNTicks, parameterKeys, defaultParameterValues, defaultTerminology
+  canvasMargin,
+  circleAvgDiameter,
+  circleColors,
+  circleMinDiameter,
+  clusterColors,
+  defaultParameterValues,
+  defaultTerminology,
+  labelFontSizeScalingConstant,
+  labelMinFontSize,
+  lineAvgWidth,
+  lineMinWidth,
+  mapFileHeaders,
+  parameterKeys,
+  scoreColorLegendDesiredNTicks,
+  scoreColorLegendPropScoresBetweenMinAndMax
 } from 'utils/variables';
-import { ItemStatus, LinkStatus, VisualizationStatus, calcDistance } from 'utils/drawing';
+import { calcDistance, ItemStatus, LinkStatus, VisualizationStatus } from 'utils/drawing';
 import {
-  getLabelValue, getClusterKeys, getWeightKeys, getScoreKeys, getColorScheme, getNiceMinValue, getNiceMaxValue
+  getClusterKeys,
+  getColorScheme,
+  getLabelValue,
+  getNiceMaxValue,
+  getNiceMinValue,
+  getScoreKeys,
+  getWeightKeys
 } from 'utils/helpers';
 
 export default class State {
@@ -116,14 +136,22 @@ export default class State {
     ];
     this.totalLinkStrength = 0;
     this.itemLinkData = {};
-    this.getScreenshotImage = () => {};
-    this.getDefaultLinkCanvasImage = () => {};
-    this.getDefaultItemCircleCanvasImage = () => {};
-    this.getHighlightedItemCircleLinkCanvasImage = () => {};
-    this.getItemLabelCanvasImage = () => {};
-    this.getScoreColorLegendCanvasImage = () => {};
-    this.getSizeLegendCanvasImage = () => {};
-    this.getClusterLegendCanvasImage = () => {};
+    this.getScreenshotImage = () => {
+    };
+    this.getDefaultLinkCanvasImage = () => {
+    };
+    this.getDefaultItemCircleCanvasImage = () => {
+    };
+    this.getHighlightedItemCircleLinkCanvasImage = () => {
+    };
+    this.getItemLabelCanvasImage = () => {
+    };
+    this.getScoreColorLegendCanvasImage = () => {
+    };
+    this.getSizeLegendCanvasImage = () => {
+    };
+    this.getClusterLegendCanvasImage = () => {
+    };
     this.getLogoImages = () => ([]);
   }
 
