@@ -2,7 +2,7 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { CssBaseline } from '@material-ui/core';
-import { ThemeProvider, createTheme } from '@material-ui/core/styles';
+import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import _isPlainObject from 'lodash/isPlainObject';
 
 import VisualizationComponent from 'components/visualization/VisualizationComponent';
@@ -21,18 +21,20 @@ import ZoomPanel from 'components/ui/ZoomPanel';
 import ErrorDialog from 'components/ui/ErrorDialog';
 import UnconnectedItemsDialog from 'components/ui/UnconnectedItemsDialog';
 import LoadingScreen from 'components/ui/LoadingScreen';
-import vosviewerLogoLowRes from 'assets/images/vosviewer-logo-low-res.png';
-import vosviewerLogoHighRes from 'assets/images/vosviewer-logo-high-res.png';
-import vosviewerLogoDarkLowRes from 'assets/images/vosviewer-logo-dark-low-res.png';
-import vosviewerLogoDarkHighRes from 'assets/images/vosviewer-logo-dark-high-res.png';
 import zetaalphaLogo from 'assets/images/zeta-alpha-logo.svg';
 import zetaalphaLogoDark from 'assets/images/zeta-alpha-logo-dark.svg';
 
 import {
-  ClusteringStoreContext, ConfigStoreContext, LayoutStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext, WebworkerStoreContext
+  ClusteringStoreContext,
+  ConfigStoreContext,
+  LayoutStoreContext,
+  QueryStringStoreContext,
+  UiStoreContext,
+  VisualizationStoreContext,
+  WebworkerStoreContext
 } from 'store/stores';
 import { getProxyUrl } from 'utils/helpers';
-import { parameterKeys, panelBackgroundColors, visualizationBackgroundColors } from 'utils/variables';
+import { panelBackgroundColors, parameterKeys, visualizationBackgroundColors } from 'utils/variables';
 import * as s from './style';
 
 const ZetaAlpha = observer(({ queryString }) => {
@@ -60,6 +62,12 @@ const ZetaAlpha = observer(({ queryString }) => {
     let mapURL = getProxyUrl(proxy, queryString[parameterKeys.MAP]);
     let networkURL = getProxyUrl(proxy, queryString[parameterKeys.NETWORK]);
     let jsonURL = getProxyUrl(proxy, queryString[parameterKeys.JSON]);
+    const authToken = queryString[parameterKeys.AUTH_TOKEN];
+    if (authToken) {
+      window.localStorage.setItem('token', authToken);
+    } else {
+      window.localStorage.removeItem('token');
+    }
     if (NODE_ENV === 'development' && !mapURL && !networkURL && !jsonURL) {
       jsonURL = 'data/Zeta-Alpha_ICLR2021.json';
     } else if (!mapURL && !networkURL && !jsonURL) {
@@ -79,8 +87,8 @@ const ZetaAlpha = observer(({ queryString }) => {
   }, []);
 
   useEffect(() => {
-    visualizationStore.setGetLogoImages(() => ([vosviewerLogoEl.current, zetaalphaLogoEl.current]));
-  }, [vosviewerLogoEl, zetaalphaLogoEl]);
+    visualizationStore.setGetLogoImages(() => ([zetaalphaLogoEl.current]));
+  }, [zetaalphaLogoEl]);
 
   const muiTheme = (isDark) => {
     const { uiStyle } = configStore;
@@ -194,20 +202,31 @@ const ZetaAlpha = observer(({ queryString }) => {
         <VisualizationComponent customFont={configStore.uiStyle.font_family} />
         <img
           className={s.vosviewerLogo}
-          src={uiStore.darkTheme ? vosviewerLogoDarkLowRes : vosviewerLogoLowRes}
-          srcSet={`${uiStore.darkTheme ? vosviewerLogoDarkHighRes : vosviewerLogoHighRes} 2x`}
+          src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo}
+          srcSet={`${uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} 2x`}
           alt="VOSviewer"
           ref={vosviewerLogoEl}
         />
-        <img className={s.zetaalphaLogo} src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} alt="Zeta Alpha" ref={zetaalphaLogoEl} />
-        <div className={`${s.actionIcons(configStore.urlPreviewPanelWidth)} ${configStore.urlPreviewPanel ? s.previewIsOpen : ''}`}>
+        <img
+          className={s.zetaalphaLogo}
+          src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo}
+          alt="Zeta Alpha"
+          ref={zetaalphaLogoEl}
+        />
+        <div
+          className={`${s.actionIcons(configStore.urlPreviewPanelWidth)} ${configStore.urlPreviewPanel ? s.previewIsOpen : ''}`}
+        >
           <Open />
-          <Save />
-          <Share />
-          <Screenshot />
-          <DarkLightTheme />
+          {configStore.fullscreen && (
+            <>
+              <Save />
+              <Share />
+              <Screenshot />
+              <DarkLightTheme />
+              <Info />
+            </>
+          )}
           <Fullscreen />
-          <Info />
         </div>
         <URLPanel />
         <LegendPanel />

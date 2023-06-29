@@ -1,6 +1,5 @@
 /* global CONFIG MODE */
 import React, { useContext, useEffect, useState } from 'react';
-// eslint-disable-next-line import/no-unresolved
 import { render } from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import levenSort from 'leven-sort';
@@ -8,7 +7,14 @@ import _isUndefined from 'lodash/isUndefined';
 import _isPlainObject from 'lodash/isPlainObject';
 
 import {
-  ConfigStoreContext, ClusteringStoreContext, FileDataStoreContext, LayoutStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext, WebworkerStoreContext
+  ClusteringStoreContext,
+  ConfigStoreContext,
+  FileDataStoreContext,
+  LayoutStoreContext,
+  QueryStringStoreContext,
+  UiStoreContext,
+  VisualizationStoreContext,
+  WebworkerStoreContext
 } from 'store/stores';
 import VOSviewerApp from './VOSviewerApp';
 import DimensionsApp from './DimensionsApp';
@@ -38,9 +44,57 @@ const APP = observer(() => {
     clusteringStore.updateStore(configStore);
   }
 
+  const compute = (origin) => {
+    const jsonData = visualizationStore.getJsonData(
+      fileDataStore.getTerminology(),
+      fileDataStore.getTemplates(),
+      fileDataStore.getStyles(),
+      fileDataStore.parameters,
+      fileDataStore.getColorSchemes(),
+      fileDataStore.getClusters()
+    );
+
+    fileDataStore.setPreviousJsonData(jsonData);
+    const baseUrl = (origin.includes("localhost") || origin.includes("search-staging")) ? 'https://api-staging.zeta-alpha.com' : 'https://api.zeta-alpha.com';
+    const newData = {
+      url: `${baseUrl}/v0/service/documents/document/vos-cluster-titles`,
+      method: 'POST',
+      body: JSON.stringify(jsonData)
+    };
+
+    webworkerStore.openJsonFile(newData, false);
+  };
+
+  const handleGoBack = () => {
+    const oldData = fileDataStore.getPreviousJsonData();
+    webworkerStore.openJsonFile(oldData, false);
+  };
+
+  const isAcceptableUrl = (url) => {
+    const accaptedOrigins = ['http://localhost:3000', 'https://search-staging.zeta-alpha.com', 'https://search.zeta-alpha.com'];
+    const prRegex = /https:\/\/search-staging-pr-\d+.zeta-alpha.com/g;
+    const tenantRegex = /https:\/\/.+-search.zeta-alpha.com/g;
+    return accaptedOrigins.includes(url) || !!url.match(prRegex) || !!url.match(tenantRegex);
+  };
+
   useEffect(() => {
+    window.addEventListener('message', (ev) => {
+      if (isAcceptableUrl(ev.origin)) {
+        if (ev.data === 'generate cluster titles') {
+          compute(ev.origin);
+        }
+        if (ev.data === 'go back to previous titles') {
+          handleGoBack();
+        }
+      }
+    }, false);
+
+
     webworkerStore.addWorkerEventListener(d => {
       const { type, data } = d;
+
+      // Replay worker messages into parent window for iframe --> page communication.
+      window.parent.postMessage(JSON.stringify({ type, data }), "*");
       switch (type) {
         case 'update loading screen':
           uiStore.setLoadingScreenProcessType(data.processType);
@@ -71,7 +125,10 @@ const APP = observer(() => {
             if (_isPlainObject(fileDataStore.parameters)) {
               configStore.updateStore({ parameters: fileDataStore.parameters });
               uiStore.updateStore({ parameters: fileDataStore.parameters });
-              visualizationStore.updateStore({ parameters: fileDataStore.parameters, colorSchemes: fileDataStore.getColorSchemes() });
+              visualizationStore.updateStore({
+                parameters: fileDataStore.parameters,
+                colorSchemes: fileDataStore.getColorSchemes()
+              });
               layoutStore.updateStore({ parameters: fileDataStore.parameters });
               clusteringStore.updateStore({ parameters: fileDataStore.parameters });
             }
@@ -88,17 +145,27 @@ const APP = observer(() => {
 
           visualizationStore.setItemIdToIndex(data.itemIdToIndex);
           if (!_isUndefined(visualizationStore.largestComponent)) {
-            webworkerStore.startHandleUnconnectedItems({ unconnectedItemsDialogChoice: visualizationStore.largestComponent ? 'yes' : 'no', mapData: fileDataStore.mapData, networkData: fileDataStore.networkData, itemIdToIndex: visualizationStore.itemIdToIndex });
+            webworkerStore.startHandleUnconnectedItems({
+              unconnectedItemsDialogChoice: visualizationStore.largestComponent ? 'yes' : 'no',
+              mapData: fileDataStore.mapData,
+              networkData: fileDataStore.networkData,
+              itemIdToIndex: visualizationStore.itemIdToIndex
+            });
           } else if (!fileDataStore.coordinatesAreAvailable && data.hasUnconnectedItems) {
             uiStore.setUnconnectedItemsDialog(data.hasUnconnectedItems, data.nItemsNetwork, data.nItemsLargestComponent);
             uiStore.setUnconnectedItemsDialogIsOpen(true);
             uiStore.setLoadingScreenIsOpen(false);
           } else {
-            webworkerStore.startHandleUnconnectedItems({ unconnectedItemsDialogChoice: 'no', mapData: fileDataStore.mapData, networkData: fileDataStore.networkData, itemIdToIndex: visualizationStore.itemIdToIndex });
+            webworkerStore.startHandleUnconnectedItems({
+              unconnectedItemsDialogChoice: 'no',
+              mapData: fileDataStore.mapData,
+              networkData: fileDataStore.networkData,
+              itemIdToIndex: visualizationStore.itemIdToIndex
+            });
           }
           break;
         case 'end handle unconnected items':
-          if (data.mapData && data.networkData && data.itemIdToIndex) {
+          if (data.mapData && data.networkData && data.itemIdToIndex && !fileDataStore.coordinatesAreAvailable) {
             fileDataStore.setMapData(data.mapData);
             fileDataStore.setNetworkData(data.networkData);
             visualizationStore.setItemIdToIndex(data.itemIdToIndex);
