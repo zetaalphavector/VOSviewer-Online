@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import HTMLRenderer from "react-html-renderer";
 import * as styles from './styles';
 import { DocImageContent } from "./components/DocImageContent";
 import { getInitialsFromName, getPaperImgBySource } from "./utils";
@@ -38,7 +39,9 @@ export const DynamicArticle = ({ item }) => {
           </a>
         </div>
         <div className={styles.AuthorDynamicArticle}>{authors}</div>
-        <div className="description_abstract" dangerouslySetInnerHTML={{ __html: abstract }} />
+        <div className="description_abstract">
+          <HTMLRenderer html={abstract} />
+        </div>
       </div>
     </div>
   );
