@@ -38,7 +38,7 @@ export const DynamicArticle = ({ item }) => {
           </a>
         </div>
         <div className={styles.AuthorDynamicArticle}>{authors}</div>
-        <div className="description_abstract">{abstract}</div>
+        <div className="description_abstract" dangerouslySetInnerHTML={{ __html: abstract }} />
       </div>
     </div>
   );
