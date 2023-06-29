@@ -20,11 +20,6 @@ export const AuthorDynamicArticle = css`
   color: #757575;
 `;
 
-export const FallBackImage = css`
-  filter: grayscale(1);
-  opacity: 0.2;
-`;
-
 export const Avatar = css`
   width: 48px;
   height: 48px;

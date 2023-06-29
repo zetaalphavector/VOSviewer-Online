@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import * as styles from "../styles";
 import { AdaptiveImage } from "./AdaptiveImage";
 import { useResource } from "../hooks/useResource";
 
@@ -20,7 +19,6 @@ export const DocMediaImage = ({
       fallback={fallback}
       isLoading={isLoading}
       error={error}
-      className={error ? styles.FallBackImage : undefined}
       al={alt}
     />
   );
