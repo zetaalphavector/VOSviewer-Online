@@ -7,7 +7,7 @@ import _isNil from 'lodash/isNil';
 import _isNull from 'lodash/isNull';
 import _isUndefined from 'lodash/isUndefined';
 
-import { ConfigStoreContext, FileDataStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext } from 'store/stores';
+import { ConfigStoreContext, FileDataStoreContext, UiStoreContext, VisualizationStoreContext } from 'store/stores';
 import { trimTextEnd } from 'utils/helpers';
 import { parseDescription } from 'utils/helpers2';
 import * as s from './styles';
@@ -18,7 +18,6 @@ const Divider = () => <Typography component="p" className={s.divider}> | </Typog
 
 const InfoPanel = observer(() => {
   const configStore = useContext(ConfigStoreContext);
-  const queryStringStore = useContext(QueryStringStoreContext);
   const fileDataStore = useContext(FileDataStoreContext);
   const uiStore = useContext(UiStoreContext);
   const visualizationStore = useContext(VisualizationStoreContext);
@@ -43,7 +42,7 @@ const InfoPanel = observer(() => {
   };
 
   const getSizeLabel = () => {
-    const text = (visualizationStore.weightKeysCustomTerminology && visualizationStore.weightKeysCustomTerminology.length > 0 ) ? visualizationStore.weightKeysCustomTerminology[visualizationStore.weightIndex] : '';
+    const text = (visualizationStore.weightKeysCustomTerminology && visualizationStore.weightKeysCustomTerminology.length > 0) ? visualizationStore.weightKeysCustomTerminology[visualizationStore.weightIndex] : '';
     const findMatch = text && text.match(/<(.*)>/);
     return findMatch ? findMatch[1] : text;
   };
@@ -85,92 +84,101 @@ const InfoPanel = observer(() => {
         <>
           <InfoItem text={`${fileDataStore.terminology.item}: ${trimTextEnd(getItemLabel(highlightedItem), 50)}`} />
           {itemLinkData
-            && (
-              <>
-                <Divider />
-                <InfoItem text={`${fileDataStore.terminology.links}: ${formatNumber(itemLinkData.nLinks)}`} />
-                {uiStore.windowInnerWidth > 800
-                  && (
-                    <>
-                      <Divider />
-                      <InfoItem text={`${fileDataStore.terminology.total_link_strength}: ${formatNumber(itemLinkData.totalLinkStrength)}`} />
-                    </>
-                  )
-                }
-              </>
-            )
+              && (
+                <>
+                  <Divider />
+                  <InfoItem text={`${fileDataStore.terminology.links}: ${formatNumber(itemLinkData.nLinks)}`} />
+                  {uiStore.windowInnerWidth > 800
+                    && (
+                      <>
+                        <Divider />
+                        <InfoItem
+                          text={`${fileDataStore.terminology.total_link_strength}: ${formatNumber(itemLinkData.totalLinkStrength)}`}
+                        />
+                      </>
+                    )
+                  }
+                </>
+              )
           }
           {!_isUndefined(weightValue) && ((sizeLabel !== fileDataStore.terminology.total_link_strength && sizeLabel !== fileDataStore.terminology.links)
-            || ((sizeLabel === fileDataStore.terminology.total_link_strength || sizeLabel === fileDataStore.terminology.links) && !itemLinkData))
-            && (
-              <>
-                <Divider />
-                <InfoItem text={`${sizeLabel === 'weight' ? 'Custom' : sizeLabel}: ${formatNumber(weightValue)}`} />
-              </>
-            )
+                || ((sizeLabel === fileDataStore.terminology.total_link_strength || sizeLabel === fileDataStore.terminology.links) && !itemLinkData))
+              && (
+                <>
+                  <Divider />
+                  <InfoItem text={`${sizeLabel === 'weight' ? 'Custom' : sizeLabel}: ${formatNumber(weightValue)}`} />
+                </>
+              )
           }
           {uiStore.colorIndex === 0 && !_isNil(highlightedItem.cluster)
-            && (
-              <>
-                <Divider />
-                <InfoItem text={`${fileDataStore.terminology.cluster}: ${fileDataStore.clusters.get(highlightedItem.cluster) || highlightedItem.cluster}`} />
-              </>
-            )
+              && (
+                <>
+                  <Divider />
+                  <InfoItem
+                    text={`${fileDataStore.terminology.cluster}: ${fileDataStore.clusters.get(highlightedItem.cluster) || highlightedItem.cluster}`}
+                  />
+                </>
+              )
           }
           {uiStore.colorIndex > 0
-            && (
-              <>
-                <Divider />
-                <InfoItem text={`${scoreLabel === 'score' ? 'Custom' : scoreLabel}: ${formatNumber(highlightedItem[visualizationStore.scoreKey])}`} />
-              </>
-            )
+              && (
+                <>
+                  <Divider />
+                  <InfoItem
+                    text={`${scoreLabel === 'score' ? 'Custom' : scoreLabel}: ${formatNumber(highlightedItem[visualizationStore.scoreKey])}`}
+                  />
+                </>
+              )
           }
           {highlightedItem.url
-            && (
-              <>
-                <Divider />
-                <InfoItem text={<Link target="_blank" href={highlightedItem.url}> URL </Link>} />
-              </>
-            )
+              && (
+                <>
+                  <Divider />
+                  <InfoItem text={<Link target="_blank" href={highlightedItem.url}> URL </Link>} />
+                </>
+              )
           }
         </>
-      )
-      : (
-        <>
-          <InfoItem text={`${fileDataStore.terminology.item} 1: ${trimTextEnd(getItemLabel(visualizationStore.itemsForLinks[highlightedLink.from]), 50)}`} />
-          <Divider />
-          <InfoItem text={`${fileDataStore.terminology.item} 2: ${trimTextEnd(getItemLabel(visualizationStore.itemsForLinks[highlightedLink.to]), 50)}`} />
-          <Divider />
-          <InfoItem text={`${fileDataStore.terminology.link_strength}: ${formatNumber(highlightedLink.strength)}`} />
-          {highlightedLink.url
-            && (
-              <>
-                <Divider />
-                <InfoItem text={<Link target="_blank" href={highlightedLink.url}> URL </Link>} />
-              </>
-            )
-          }
-        </>
-      )
+        )
+        : (
+          <>
+            <InfoItem
+              text={`${fileDataStore.terminology.item} 1: ${trimTextEnd(getItemLabel(visualizationStore.itemsForLinks[highlightedLink.from]), 50)}`}
+            />
+            <Divider />
+            <InfoItem
+              text={`${fileDataStore.terminology.item} 2: ${trimTextEnd(getItemLabel(visualizationStore.itemsForLinks[highlightedLink.to]), 50)}`}
+            />
+            <Divider />
+            <InfoItem text={`${fileDataStore.terminology.link_strength}: ${formatNumber(highlightedLink.strength)}`} />
+            {highlightedLink.url
+              && (
+                <>
+                  <Divider />
+                  <InfoItem text={<Link target="_blank" href={highlightedLink.url}> URL </Link>} />
+                </>
+              )
+            }
+          </>
+        )
     );
   };
 
   const showInfoContent = () => configStore.uiConfig.information_panel;
 
   const showDescriptionContent = () => isOpen
-      && configStore.uiConfig.description_panel
-      && (
-        (hoveredItem && hoveredItem.description)
-        || (clickedItem && clickedItem.description)
-        || (hoveredLink && hoveredLink.description)
-        || (clickedLink && clickedLink.description)
-        || ((hoveredItem || clickedItem) && fileDataStore.templates.item_description)
-        || ((hoveredLink || clickedLink) && fileDataStore.templates.link_description)
-      );
+    && configStore.uiConfig.description_panel
+    && (
+      (hoveredItem && hoveredItem.description)
+      || (clickedItem && clickedItem.description)
+      || (hoveredLink && hoveredLink.description)
+      || (clickedLink && clickedLink.description)
+      || ((hoveredItem || clickedItem) && fileDataStore.templates.item_description)
+      || ((hoveredLink || clickedLink) && fileDataStore.templates.link_description)
+    );
 
-  const isDynamicArticle = (item) => item && ('image_url' in item || 'logo_url' in item);
-
-  const getItemDescription = (item) => (isDynamicArticle(item) ? <DynamicArticle item={item} /> : parseDescription(item, 'item_description', { fileDataStore, visualizationStore }));
+  const getItemDescription = (item) => (item
+    ? <DynamicArticle item={item} /> : parseDescription(item, 'item_description', { fileDataStore, visualizationStore }));
 
   const getLinkDescription = (link) => parseDescription(link, 'link_description', { fileDataStore, visualizationStore });
 
@@ -178,7 +186,11 @@ const InfoPanel = observer(() => {
     <>
       {(showInfoContent() || showDescriptionContent())
         && (
-          <Paper className={`${s.infoPanel} ${uiStore.controlPanelIsOpen ? s.shifted : s.notshifted} ${visualizationStore.items.length ? s.visible : ''}`} ref={refEl} elevation={3}>
+          <Paper
+            className={`${s.infoPanel} ${uiStore.controlPanelIsOpen ? s.shifted : s.notshifted} ${visualizationStore.items.length ? s.visible : ''}`}
+            ref={refEl}
+            elevation={3}
+          >
             {showDescriptionContent() && (
               <IconButton className={s.closeButton} onClick={exitInfoPanel}>
                 <CloseIcon fontSize="small" />
@@ -200,36 +212,42 @@ const InfoPanel = observer(() => {
             }
             {showInfoContent()
               && (hoveredItem || hoveredLink || clickedItem || clickedLink
-                ? getItemOrLinkInfo()
-                : (
-                  <>
-                    <InfoItem text={`${fileDataStore.terminology.items}: ${visualizationStore.items.length}`} />
-                    {Boolean(visualizationStore.links.length)
-                      && (
-                        <>
-                          <Divider />
-                          <InfoItem text={`${fileDataStore.terminology.links}: ${formatNumber(visualizationStore.links.length)}`} />
-                          {uiStore.windowInnerWidth > 800
-                            && (
-                              <>
-                                <Divider />
-                                <InfoItem text={`${fileDataStore.terminology.total_link_strength}: ${formatNumber(visualizationStore.totalLinkStrength)}`} />
-                              </>
-                            )
-                          }
-                        </>
-                      )
-                    }
-                    {visualizationStore.clusters && uiStore.colorIndex === 0
-                      && (
-                        <>
-                          <Divider />
-                          <InfoItem text={`${fileDataStore.terminology.clusters}: ${visualizationStore.clusters.length}`} />
-                        </>
-                      )
-                    }
-                  </>
-                )
+                  ? getItemOrLinkInfo()
+                  : (
+                    <>
+                      <InfoItem text={`${fileDataStore.terminology.items}: ${visualizationStore.items.length}`} />
+                      {Boolean(visualizationStore.links.length)
+                        && (
+                          <>
+                            <Divider />
+                            <InfoItem
+                              text={`${fileDataStore.terminology.links}: ${formatNumber(visualizationStore.links.length)}`}
+                            />
+                            {uiStore.windowInnerWidth > 800
+                              && (
+                                <>
+                                  <Divider />
+                                  <InfoItem
+                                    text={`${fileDataStore.terminology.total_link_strength}: ${formatNumber(visualizationStore.totalLinkStrength)}`}
+                                  />
+                                </>
+                              )
+                            }
+                          </>
+                        )
+                      }
+                      {visualizationStore.clusters && uiStore.colorIndex === 0
+                        && (
+                          <>
+                            <Divider />
+                            <InfoItem
+                              text={`${fileDataStore.terminology.clusters}: ${visualizationStore.clusters.length}`}
+                            />
+                          </>
+                        )
+                      }
+                    </>
+                  )
               )
             }
           </Paper>
