@@ -33,7 +33,7 @@ export const panel = css`
         margin: 0px auto 54px auto;
       }
     }
-  
+
     .sizeLegend {
       margin: auto 0px;
       cursor: pointer;
@@ -62,7 +62,7 @@ export const controls = css`
   padding: 10px 15px;
   pointer-events: all;
   background-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0px 0px 6px 1px rgba(191,192,193,0.25);
+  box-shadow: 0px 0px 6px 1px rgba(191, 192, 193, 0.25);
   border-radius: 4px;
 
   .item {
@@ -142,9 +142,9 @@ export const controls = css`
     transform: scale(1);
     color: black;
   }
- `;
+`;
 
 export const menuItemStyle = css`
- display: inline-block;
- font-size: 10pt;
+  display: inline-block;
+  font-size: 10pt;
 `;

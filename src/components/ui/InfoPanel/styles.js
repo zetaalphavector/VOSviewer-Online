@@ -17,11 +17,11 @@ export const infoPanel = css`
   label: info-panel;
   visibility: hidden;
   position: absolute;
-  width: max-content;
   bottom: 0;
   margin: ${panelMargin}px;
   padding: ${panelPadding}px;
   font-size: 0.75rem !important;
+  width: 95%;
 
   &${`.${visible}`} {
     visibility: unset;
@@ -31,7 +31,7 @@ export const infoPanel = css`
     transition: left 0.3s;
     left: 0px;
   }
-  
+
   &${`.${shifted}`} {
     transition: left 0.3s;
     left: ${controlPanelWidth}px;
@@ -50,6 +50,7 @@ export const infoPanel = css`
 
   table {
     font-size: 0.75rem !important;
+
     tr {
       td:first-child {
         min-width: 100px;
