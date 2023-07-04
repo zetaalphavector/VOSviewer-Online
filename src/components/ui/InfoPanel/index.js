@@ -182,78 +182,76 @@ const InfoPanel = observer(() => {
 
   const getLinkDescription = (link) => parseDescription(link, 'link_description', { fileDataStore, visualizationStore });
 
+  if (!showInfoContent() && !showDescriptionContent()) {
+    return null;
+  }
+
   return (
-    <>
-      {(showInfoContent() || showDescriptionContent())
+    <Paper
+      className={`${s.infoPanel} ${uiStore.controlPanelIsOpen ? s.shifted : s.notshifted} ${visualizationStore.items.length ? s.visible : ''}`}
+      ref={refEl}
+      elevation={3}
+    >
+      {showDescriptionContent() && (
+        <IconButton className={s.closeButton} onClick={exitInfoPanel}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      )}
+      {showDescriptionContent()
         && (
-          <Paper
-            className={`${s.infoPanel} ${uiStore.controlPanelIsOpen ? s.shifted : s.notshifted} ${visualizationStore.items.length ? s.visible : ''}`}
-            ref={refEl}
-            elevation={3}
-          >
-            {showDescriptionContent() && (
-              <IconButton className={s.closeButton} onClick={exitInfoPanel}>
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            )}
-            {showDescriptionContent()
-              && (
-                <>
-                  <Typography component="div" className={s.description}>
-                    {getItemDescription(hoveredItem)
-                      || getLinkDescription(hoveredLink)
-                      || getItemDescription(clickedItem)
-                      || getLinkDescription(clickedLink)
-                    }
-                  </Typography>
-                  {showInfoContent() && <hr />}
-                </>
-              )
-            }
-            {showInfoContent()
-              && (hoveredItem || hoveredLink || clickedItem || clickedLink
-                  ? getItemOrLinkInfo()
-                  : (
+          <>
+            <Typography component="div" className={s.description}>
+              {getItemDescription(hoveredItem)
+                || getLinkDescription(hoveredLink)
+                || getItemDescription(clickedItem)
+                || getLinkDescription(clickedLink)
+              }
+            </Typography>
+            {showInfoContent() && <hr />}
+          </>
+        )
+      }
+      {showInfoContent()
+        && (hoveredItem || hoveredLink || clickedItem || clickedLink
+            ? getItemOrLinkInfo()
+            : (
+              <>
+                <InfoItem text={`${fileDataStore.terminology.items}: ${visualizationStore.items.length}`} />
+                {Boolean(visualizationStore.links.length)
+                  && (
                     <>
-                      <InfoItem text={`${fileDataStore.terminology.items}: ${visualizationStore.items.length}`} />
-                      {Boolean(visualizationStore.links.length)
+                      <Divider />
+                      <InfoItem
+                        text={`${fileDataStore.terminology.links}: ${formatNumber(visualizationStore.links.length)}`}
+                      />
+                      {uiStore.windowInnerWidth > 800
                         && (
                           <>
                             <Divider />
                             <InfoItem
-                              text={`${fileDataStore.terminology.links}: ${formatNumber(visualizationStore.links.length)}`}
-                            />
-                            {uiStore.windowInnerWidth > 800
-                              && (
-                                <>
-                                  <Divider />
-                                  <InfoItem
-                                    text={`${fileDataStore.terminology.total_link_strength}: ${formatNumber(visualizationStore.totalLinkStrength)}`}
-                                  />
-                                </>
-                              )
-                            }
-                          </>
-                        )
-                      }
-                      {visualizationStore.clusters && uiStore.colorIndex === 0
-                        && (
-                          <>
-                            <Divider />
-                            <InfoItem
-                              text={`${fileDataStore.terminology.clusters}: ${visualizationStore.clusters.length}`}
+                              text={`${fileDataStore.terminology.total_link_strength}: ${formatNumber(visualizationStore.totalLinkStrength)}`}
                             />
                           </>
                         )
                       }
                     </>
                   )
-              )
-            }
-          </Paper>
+                }
+                {visualizationStore.clusters && uiStore.colorIndex === 0
+                  && (
+                    <>
+                      <Divider />
+                      <InfoItem
+                        text={`${fileDataStore.terminology.clusters}: ${visualizationStore.clusters.length}`}
+                      />
+                    </>
+                  )
+                }
+              </>
+            )
         )
       }
-    </>
+    </Paper>
   );
 });
 
