@@ -2,6 +2,8 @@ import { join, resolve } from 'path';
 import webpack from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
+import WorkboxPlugin from 'workbox-webpack-plugin';
+
 // import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
 function absolute(...args) {
@@ -111,6 +113,7 @@ export default (env = defaultEnv) => {
 
   let jsonConfig;
   try {
+    // eslint-disable-next-line import/no-dynamic-require, global-require
     jsonConfig = require(resolve(__dirname, env.config));
   } catch (ex) {
     jsonConfig = {};
@@ -128,8 +131,40 @@ export default (env = defaultEnv) => {
       MODE: JSON.stringify(appMode),
       CONFIG: JSON.stringify(jsonConfig),
     }),
-
-    // new BundleAnalyzerPlugin(),
+    new WorkboxPlugin.GenerateSW({
+      clientsClaim: true,
+      skipWaiting: true,
+      runtimeCaching: [
+        {
+          urlPattern: ({ request }) => request.destination === 'image',
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheName: 'images-cache',
+          },
+        },
+        {
+          urlPattern: new RegExp('https://fonts.(?:googleapis|gstatic).com/(.*)'),
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'google-fonts',
+          }
+        },
+        {
+          urlPattern: new RegExp('https://zeta-objects(.*)'),
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'zeta-objects',
+          }
+        },
+        {
+          urlPattern: new RegExp('https://api(.*).zeta-alpha.com/(.*)'),
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'zeta-alpha',
+          }
+        },
+      ]
+    }),
   ];
 
   if (appMode === 'vosviewer') {

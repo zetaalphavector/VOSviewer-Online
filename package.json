@@ -12,12 +12,12 @@
   "module": "src",
   "scripts": {
     "build": "webpack --progress --colors --verbose --display-error-details --env.config config.json --config webpack.config.babel.js",
-    "build:vosviewer": "npm run build",
+    "build:vosviewer": "yarn build",
     "build:dimensions": "webpack --progress --colors --verbose --display-error-details --env.config config-dimensions.json --env.mode=dimensions --config webpack.config.babel.js",
     "build:zeta-alpha": "webpack --progress --colors --verbose --display-error-details --env.config config-zeta-alpha.json --env.mode=zetaalpha --config webpack.config.babel.js",
     "build:rori": "webpack --progress --colors --verbose --display-error-details --env.mode=rori --config webpack.config.babel.js",
     "dev": "webpack-dev-server --hot --port 8600 --colors --watch --env.dev --env.config config.json --config webpack.config.babel.js",
-    "dev:vosviewer": "npm run dev",
+    "dev:vosviewer": "yarn dev",
     "dev:dimensions": "webpack-dev-server --hot --port 8600 --colors --watch --env.dev --env.config config-dimensions.json --env.mode=dimensions --config webpack.config.babel.js",
     "dev:zeta-alpha": "webpack-dev-server --hot --port 8600 --colors --watch --env.dev --env.config config-zeta-alpha.json --env.mode=zetaalpha --config webpack.config.babel.js",
     "dev:rori": "webpack-dev-server --hot --port 8600 --colors --watch --env.dev --env.mode=rori --config webpack.config.babel.js"
@@ -48,7 +48,8 @@
     "react-html-renderer": "^0.3.3",
     "react-router-dom": "^5.0.1",
     "tinyurl": "^1.1.7",
-    "use-debounce": "0.0.7"
+    "use-debounce": "0.0.7",
+    "workbox-webpack-plugin": "^7.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.2.2",
