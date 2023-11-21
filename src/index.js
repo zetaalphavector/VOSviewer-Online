@@ -73,8 +73,18 @@ const APP = observer(() => {
     webworkerStore.openJsonFile(oldData, false);
   };
 
+  const isAcceptableUrl = (url) => {
+    const accaptedOrigins = ['http://localhost:3000', 'http://localhost:8600', 'https://search-staging.zeta-alpha.com', 'https://search.zeta-alpha.com'];
+    const prRegex = /https:\/\/search-staging-pr-\d+.zeta-alpha.com/g;
+    const tenantRegex = /https:\/\/.+-search.zeta-alpha.com/g;
+    return accaptedOrigins.includes(url) || !!url.match(prRegex) || !!url.match(tenantRegex);
+  };
+
   useEffect(() => {
     window.addEventListener('message', (ev) => {
+      if (!isAcceptableUrl(ev.origin)) {
+        return;
+      }
       if (ev.data === 'generate cluster titles') {
         compute(ev.origin);
       }
