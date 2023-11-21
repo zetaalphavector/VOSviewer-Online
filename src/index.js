@@ -56,8 +56,11 @@ const APP = observer(() => {
 
     fileDataStore.setPreviousJsonData(jsonData);
     const baseUrl = (origin.includes("localhost") || origin.includes("search-staging")) ? 'https://api-staging.zeta-alpha.com' : 'https://api.zeta-alpha.com';
+    const urlParams = new URLSearchParams(location.search);
+    const tenant = urlParams.get('tenant');
+    const tenantSuffix = tenant ? `?tenant=${tenant}` : '';
     const newData = {
-      url: `${baseUrl}/v0/service/documents/document/vos-cluster-titles`,
+      url: `${baseUrl}/v0/service/documents/document/vos-cluster-titles${tenantSuffix}`,
       method: 'POST',
       body: JSON.stringify(jsonData)
     };
@@ -71,7 +74,7 @@ const APP = observer(() => {
   };
 
   const isAcceptableUrl = (url) => {
-    const accaptedOrigins = ['http://localhost:3000', 'https://search-staging.zeta-alpha.com', 'https://search.zeta-alpha.com'];
+    const accaptedOrigins = ['http://localhost:3000', 'http://localhost:8600', 'https://search-staging.zeta-alpha.com', 'https://search.zeta-alpha.com'];
     const prRegex = /https:\/\/search-staging-pr-\d+.zeta-alpha.com/g;
     const tenantRegex = /https:\/\/.+-search.zeta-alpha.com/g;
     return accaptedOrigins.includes(url) || !!url.match(prRegex) || !!url.match(tenantRegex);
@@ -79,13 +82,14 @@ const APP = observer(() => {
 
   useEffect(() => {
     window.addEventListener('message', (ev) => {
-      if (isAcceptableUrl(ev.origin)) {
-        if (ev.data === 'generate cluster titles') {
-          compute(ev.origin);
-        }
-        if (ev.data === 'go back to previous titles') {
-          handleGoBack();
-        }
+      if (!isAcceptableUrl(ev.origin)) {
+        return;
+      }
+      if (ev.data === 'generate cluster titles') {
+        compute(ev.origin);
+      }
+      if (ev.data === 'go back to previous titles') {
+        handleGoBack();
       }
     }, false);
 
