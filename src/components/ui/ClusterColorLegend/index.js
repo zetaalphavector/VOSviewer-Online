@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { select } from 'd3-selection';
 
-import { FileDataStoreContext, UiStoreContext, VisualizationStoreContext } from 'store/stores';
+import { DataStoreContext, UiStoreContext, VisualizationStoreContext } from 'store/stores';
 import { drawRoundedRectangle } from 'utils/drawing';
 import { trimTextEnd } from 'utils/helpers';
 import {
@@ -11,7 +11,7 @@ import {
 import * as s from './styles';
 
 const ClusterColorLegend = observer(({ showTopClustersOnly, canvasWidth, legendWidth, customFont }) => {
-  const fileDataStore = useContext(FileDataStoreContext);
+  const dataStore = useContext(DataStoreContext);
   const uiStore = useContext(UiStoreContext);
   const visualizationStore = useContext(VisualizationStoreContext);
   const canvasEl = useRef(null);
@@ -37,7 +37,7 @@ const ClusterColorLegend = observer(({ showTopClustersOnly, canvasWidth, legendW
   }, [ctx, mouseCoord, font, showTopClustersOnly, uiStore.darkTheme, visualizationStore.lastItemUpdate]);
 
   const getLegendItems = () => {
-    const arr = Array.from(fileDataStore.clusters, ([key, value]) => ({ key, value }));
+    const arr = Array.from(dataStore.clusters, ([key, value]) => ({ key, value }));
     return showTopClustersOnly ? arr.slice(0, 6) : arr;
   };
 
@@ -52,10 +52,12 @@ const ClusterColorLegend = observer(({ showTopClustersOnly, canvasWidth, legendW
 
     ctx.clearRect(0, 0, canvasWidth * visualizationStore.pixelRatio, canvasHeight * visualizationStore.pixelRatio);
 
-    ctx.font = `0.75rem ${font}`;
+    ctx.font = `${0.75 * visualizationStore.pixelRatio}rem ${font}`;
     ctx.textBaseline = 'middle';
     ctx.lineWidth = lineWidth * visualizationStore.pixelRatio;
 
+    const letterWidth = ctx.measureText('a');
+    const maxTextLength = Math.floor(((itemWidth - radius - textPadding) * visualizationStore.pixelRatio - 2 * letterWidth.width) / letterWidth.width);
     let hovered;
     legendItems.forEach((item, i) => {
       const itemX = i % 2 === 0 ? 0 : itemWidth;
@@ -72,7 +74,7 @@ const ClusterColorLegend = observer(({ showTopClustersOnly, canvasWidth, legendW
       // Draw text.
       const x = cx + radius + textPadding;
       const y = cy;
-      const textIsHovered = item.value.length > 18 && mouseCoord.length
+      const textIsHovered = item.value.length > maxTextLength && mouseCoord.length
         && mouseCoord[0] > itemX
         && mouseCoord[0] < itemX + itemWidth
         && mouseCoord[1] > itemY
@@ -89,7 +91,7 @@ const ClusterColorLegend = observer(({ showTopClustersOnly, canvasWidth, legendW
           text: item.value,
         };
       }
-      const itemText = trimTextEnd(item.value, 18);
+      const itemText = trimTextEnd(item.value, maxTextLength);
       ctx.fillStyle = uiStore.darkTheme ? color.colorDarkTheme : color.colorLightTheme;
       ctx.fillText(itemText, x * visualizationStore.pixelRatio, y * visualizationStore.pixelRatio);
     });

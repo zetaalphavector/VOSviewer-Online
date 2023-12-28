@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { FormControl, Select, InputLabel, MenuItem, Button } from '@material-ui/core';
+import { FormControl, Select, InputLabel, MenuItem, Button } from '@mui/material';
 import { ColorPicker } from 'material-ui-color';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import _join from 'lodash/join';
 
 import { UiStoreContext, VisualizationStoreContext } from 'store/stores';

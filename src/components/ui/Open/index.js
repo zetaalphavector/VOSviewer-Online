@@ -1,20 +1,21 @@
 import React, { useContext, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip
-} from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
-import FolderIcon from '@material-ui/icons/Folder';
+  Button, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import FolderIcon from '@mui/icons-material/Folder';
 
 import {
-  ConfigStoreContext, FileDataStoreContext, UiStoreContext, WebworkerStoreContext
+  ConfigStoreContext, DataStoreContext, UiStoreContext, WebworkerStoreContext
 } from 'store/stores';
+import Dialog from 'components/ui/Dialog';
 import OpenDialogContent from './OpenDialogContent';
 import * as s from './styles';
 
 const Open = observer(() => {
   const configStore = useContext(ConfigStoreContext);
-  const fileDataStore = useContext(FileDataStoreContext);
+  const dataStore = useContext(DataStoreContext);
   const uiStore = useContext(UiStoreContext);
   const webworkerStore = useContext(WebworkerStoreContext);
   const [isOpen, setIsOpen] = useState(false);
@@ -29,15 +30,15 @@ const Open = observer(() => {
 
   const openMapNetworkFile = () => {
     exitOpenDialog();
-    if (fileDataStore.mapFile || fileDataStore.networkFile) {
-      webworkerStore.openMapNetworkFile(fileDataStore.mapFile, fileDataStore.networkFile, true);
+    if (dataStore.mapFile || dataStore.networkFile) {
+      webworkerStore.openMapNetworkData(dataStore.mapFile, dataStore.networkFile, true);
     }
   };
 
   const openJsonFile = () => {
     exitOpenDialog();
-    if (fileDataStore.jsonFile) {
-      webworkerStore.openJsonFile(fileDataStore.jsonFile, true);
+    if (dataStore.jsonFile) {
+      webworkerStore.openJsonData(dataStore.jsonFile, true);
     }
   };
 
@@ -63,11 +64,13 @@ const Open = observer(() => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Open</DialogTitle>
-        <DialogContent classes={{ root: s.dialogContent }}>
+        <DialogTitle>
+          Open
           <IconButton className={s.closeButton} onClick={exitOpenDialog}>
             <CloseIcon fontSize="small" />
           </IconButton>
+        </DialogTitle>
+        <DialogContent classes={{ root: s.dialogContent }}>
           <OpenDialogContent />
         </DialogContent>
         <DialogActions>

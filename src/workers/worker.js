@@ -14,17 +14,13 @@ import _reduce from 'lodash/reduce';
 import { NetworkNormalizer, LINLOG_MODULARITY } from 'utils/networkanalysis/NetworkNormalizer';
 import { LayoutCreator } from 'utils/networkanalysis/LayoutCreator';
 import { ClusteringCreator } from 'utils/networkanalysis/ClusteringCreator';
-import { minNItems, fileTypeKeys, errorKeys, processTypes, parameterKeys } from 'utils/variables';
-
-import { getFileError, getFileReaderError, getJsonFileError, getMapFileError, getNetworkFileError } from 'utils/errors';
+import { minNItems, dataTypeKeys, errorKeys, processTypes, parameterKeys } from 'utils/variables';
+import { getError, getFileReaderError, getJsonDataError, getMapDataError, getNetworkDataError } from 'utils/errors';
 import { getItemWithTransformedKeysAndValues } from 'utils/helpers';
 
 const clusteringCreator = new ClusteringCreator();
 const layoutCreator = new LayoutCreator();
 const networkNormalizer = new NetworkNormalizer();
-
-let layoutRandomStart = 0;
-let clusterRandomStart = 0;
 
 self.addEventListener("message", event => {
   const { type, options } = event.data;
@@ -32,11 +28,11 @@ self.addEventListener("message", event => {
     case 'normalize network':
       networkNormalizer.performNormalization(options.normalizationMethod);
       break;
-    case 'start parse vosviewer-json file':
-      _parseJsonFile(options.jsonFileOrUrl, options.authToken);
+    case 'start parse vosviewer-json data':
+      _parseJsonData(options.jsonFileOrUrlOrObject);
       break;
-    case 'start parse vosviewer-map-network file':
-      _parseMapNetworkFile(options.mapFileOrUrl, options.networkFileOrUrl);
+    case 'start parse vosviewer-map-network data':
+      _parseMapNetworkData(options.mapFileOrUrl, options.networkFileOrUrl);
       break;
     case 'start process data': {
       self.postMessage({
@@ -48,7 +44,7 @@ self.addEventListener("message", event => {
       const nItemsNetwork = networkNormalizer.unnormalizedNetwork.getNNodes();
       const networkComponents = networkNormalizer.unnormalizedNetwork.identifyComponents();
       const nComponents = networkComponents.getNClusters();
-      const nItemsLargestComponent = networkNormalizer.unnormalizedNetwork.createSubnetwork(networkComponents, 0).getNNodes();
+      const nItemsLargestComponent = networkNormalizer.unnormalizedNetwork.createSubnetworkForCluster(networkComponents, 0).getNNodes();
       const hasUnconnectedItems = nComponents > 1 && nItemsLargestComponent >= minNItems;
       if (hasUnconnectedItems) networkNormalizer.setNetworkComponents(networkComponents);
       self.postMessage({
@@ -86,7 +82,6 @@ self.addEventListener("message", event => {
         type: 'update loading screen',
         data: { processType: processTypes.RUNNING_LAYOUT, progressValue: 0 },
       });
-      layoutRandomStart = 0;
       layoutCreator.init(networkNormalizer.normalizedNetwork, options);
       self.postMessage({
         type: 'update run layout progress',
@@ -94,18 +89,17 @@ self.addEventListener("message", event => {
       });
       break;
     case 'continue run layout':
-      if (layoutRandomStart < layoutCreator.nRandomStarts) {
+      if (layoutCreator.randomStart < layoutCreator.nRandomStarts) {
         layoutCreator.performRandomStart();
-        layoutRandomStart += 1;
         self.postMessage({
           type: 'update run layout progress',
-          data: { progressValue: 100 * layoutRandomStart / layoutCreator.nRandomStarts },
+          data: { progressValue: 100 * layoutCreator.randomStart / layoutCreator.nRandomStarts },
         });
       } else {
         layoutCreator.performPostProcessing();
         self.postMessage({
           type: 'end run layout',
-          data: { bestLayout: layoutCreator.bestLayout },
+          data: { newCoordinates: layoutCreator.bestLayout.getCoordinates() },
         });
       }
       break;
@@ -114,7 +108,6 @@ self.addEventListener("message", event => {
         type: 'update loading screen',
         data: { processType: processTypes.RUNNING_CLUSTERING, progressValue: 0 },
       });
-      clusterRandomStart = 0;
       clusteringCreator.init(networkNormalizer.normalizedNetwork, options, networkNormalizer.normalizationMethod === LINLOG_MODULARITY);
       self.postMessage({
         type: 'update run clustering progress',
@@ -122,39 +115,27 @@ self.addEventListener("message", event => {
       });
       break;
     case 'continue run clustering':
-      if (clusterRandomStart < clusteringCreator.nRandomStarts) {
+      if (clusteringCreator.randomStart < clusteringCreator.nRandomStarts) {
         clusteringCreator.performRandomStart();
-        clusterRandomStart += 1;
         self.postMessage({
           type: 'update run clustering progress',
-          data: { progressValue: 100 * clusterRandomStart / clusteringCreator.nRandomStarts },
+          data: { progressValue: 100 * clusteringCreator.randomStart / clusteringCreator.nRandomStarts },
         });
       } else {
         clusteringCreator.performPostProcessing();
-        const bestClustering = {
-          cluster: [],
-          nClusters: clusteringCreator.bestClustering.nClusters,
-          nNodes: clusteringCreator.bestClustering.nNodes
-        };
+        let clusters = [];
         if (clusteringCreator.mergeSmallClusters) {
-          bestClustering.cluster = clusteringCreator.bestClustering.cluster;
+          clusters = clusteringCreator.bestClustering.getClusters();
         } else {
           const nItemsPerCluster = clusteringCreator.bestClustering.getNNodesPerCluster();
-          for (let i = 0; i < bestClustering.nNodes; i++) {
-            const cluster = clusteringCreator.bestClustering.cluster[i];
-            bestClustering.cluster.push(nItemsPerCluster[cluster] >= clusteringCreator.minClusterSize ? cluster : null);
+          for (let i = 0; i < clusteringCreator.bestClustering.getNNodes(); i++) {
+            const cluster = clusteringCreator.bestClustering.getCluster(i);
+            clusters.push(nItemsPerCluster[cluster] >= clusteringCreator.minClusterSize ? cluster : null);
           }
-          let nClusters = 0;
-          for (let i = 0; i < nItemsPerCluster.length; i++) {
-            if (nItemsPerCluster[i] >= clusteringCreator.minClusterSize) {
-              nClusters += 1;
-            }
-          }
-          bestClustering.nClusters = nClusters;
         }
         self.postMessage({
           type: 'end run clustering',
-          data: { bestClustering },
+          data: { newClusters: clusters },
         });
       }
       break;
@@ -163,51 +144,29 @@ self.addEventListener("message", event => {
   }
 });
 
-function _parseJsonFile(jsonFileOrUrl, authToken) {
-  if (jsonFileOrUrl) {
+function _parseJsonData(jsonFileOrUrlOrObject) {
+  if (jsonFileOrUrlOrObject) {
     self.postMessage({
       type: 'update loading screen',
-      data: { processType: processTypes.READING_JSON_FILE },
+      data: { processType: processTypes.READING_JSON_DATA },
     });
-    if (jsonFileOrUrl instanceof File) {
+    if (jsonFileOrUrlOrObject instanceof File) {
       const reader = new FileReader();
-      reader.readAsText(jsonFileOrUrl, 'UTF-8');
+      reader.readAsText(jsonFileOrUrlOrObject, 'UTF-8');
       reader.onload = event => {
         _parseJson(event.target.result);
       };
       reader.onerror = () => {
-        const fileError = getFileReaderError(reader.error, fileTypeKeys.VOSVIEWER_JSON_FILE);
+        const dataError = getFileReaderError(reader.error, dataTypeKeys.VOSVIEWER_JSON_DATA);
         self.postMessage({
-          type: 'end parse vosviewer-json file',
-          data: { fileError },
+          type: 'end parse vosviewer-json data',
+          data: { dataError },
         });
       };
-    } else if (jsonFileOrUrl instanceof Object && jsonFileOrUrl.url) {
-      fetch(jsonFileOrUrl.url, {...((!!authToken&&jsonFileOrUrl.url.includes('zeta-alpha.com'))?{headers: {Authorization: `Bearer ${authToken}`}}:{}), credentials: "include", method: jsonFileOrUrl.method, body: jsonFileOrUrl.body })
-        .then(response => {
-          if (!response.ok) {
-            if (response.status === 404) {
-              throw new Error('Not Found');
-            } else {
-              throw new Error(response.statusText);
-            }
-          }
-          return response.text();
-        })
-        .then(text => {
-          _parseJson(text);
-        })
-        .catch(error => {
-          const fileError = getFileReaderError(error, fileTypeKeys.VOSVIEWER_JSON_FILE);
-          self.postMessage({
-            type: 'end parse vosviewer-json file',
-            data: { fileError },
-          });
-        });
-    } else if (jsonFileOrUrl instanceof Object && !jsonFileOrUrl.url) {
-      _parseJson(jsonFileOrUrl);
+    } else if (jsonFileOrUrlOrObject instanceof Object) {
+      _parseJson(jsonFileOrUrlOrObject);
     } else {
-      fetch(jsonFileOrUrl, {...((!!authToken&&jsonFileOrUrl.includes('zeta-alpha.com'))?{headers: {Authorization: `Bearer ${authToken}`}}:{}), credentials: "include" })
+      fetch(jsonFileOrUrlOrObject, { credentials: "include" })
         .then(response => {
           if (!response.ok) {
             if (response.status === 404) {
@@ -222,10 +181,10 @@ function _parseJsonFile(jsonFileOrUrl, authToken) {
           _parseJson(text);
         })
         .catch(error => {
-          const fileError = getFileReaderError(error, fileTypeKeys.VOSVIEWER_JSON_FILE);
+          const dataError = getFileReaderError(error, dataTypeKeys.VOSVIEWER_JSON_DATA);
           self.postMessage({
-            type: 'end parse vosviewer-json file',
-            data: { fileError },
+            type: 'end parse vosviewer-json data',
+            data: { dataError },
           });
         });
     }
@@ -233,7 +192,7 @@ function _parseJsonFile(jsonFileOrUrl, authToken) {
 }
 
 function _parseJson(jsonObjectOrText) {
-  let fileError;
+  let dataError;
   let jsonData = {};
   let mapData = [];
   let networkData = [];
@@ -291,7 +250,7 @@ function _parseJson(jsonObjectOrText) {
 
     const parseResultsMapData = { data: mapData, meta: { fields: Object.values(_keys(itemPrototype)) } };
     const parseResultsNetworkData = { data: networkData, meta: { fields: Object.values(_keys(linkPrototype)) } };
-    fileError = getJsonFileError(parseResultsMapData, parseResultsNetworkData);
+    dataError = getJsonDataError(parseResultsMapData, parseResultsNetworkData);
 
     if (mapData.length === 0) {
       const itemIds1 = networkData.map(d => d[0]);
@@ -301,25 +260,25 @@ function _parseJson(jsonObjectOrText) {
       mapData = uniqueItemIds.map(d => ({ id: d }));
     }
   } else if (jsonObjectOrText === "") {
-    fileError = getFileError(errorKeys.FILE_EMPTY, fileTypeKeys.VOSVIEWER_JSON_FILE);
+    dataError = getError(errorKeys.NO_DATA, dataTypeKeys.VOSVIEWER_JSON_DATA);
   } else {
-    fileError = getFileError(errorKeys.INVALID_JSON_DATA_FORMAT, fileTypeKeys.VOSVIEWER_JSON_FILE);
+    dataError = getError(errorKeys.INVALID_JSON_DATA_FORMAT, dataTypeKeys.VOSVIEWER_JSON_DATA);
   }
   self.postMessage({
-    type: 'end parse vosviewer-json file',
-    data: { fileError, jsonData, mapData, networkData },
+    type: 'end parse vosviewer-json data',
+    data: { dataError, jsonData, mapData, networkData },
   });
 }
 
-function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
-  let fileError;
+function _parseMapNetworkData(mapFileOrUrl, networkFileOrUrl) {
+  let dataError;
   let mapData = [];
   let networkData = [];
 
   if (mapFileOrUrl) {
     self.postMessage({
       type: 'update loading screen',
-      data: { processType: processTypes.READING_MAP_FILE },
+      data: { processType: processTypes.READING_MAP_DATA },
     });
     parse(mapFileOrUrl, {
       header: true,
@@ -328,10 +287,10 @@ function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
       delimitersToGuess: ['\t', ';', ','],
       // dynamicTyping: true,
       error: error => {
-        fileError = getFileReaderError(error, fileTypeKeys.VOSVIEWER_MAP_FILE);
+        dataError = getFileReaderError(error, dataTypeKeys.VOSVIEWER_MAP_DATA);
         self.postMessage({
-          type: 'end parse vosviewer-map-network file',
-          data: { fileError },
+          type: 'end parse vosviewer-map-network data',
+          data: { dataError },
         });
       },
       complete: parseResults => {
@@ -344,11 +303,11 @@ function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
         }
         parseResults.data = (parseResults.data || []).map(item => getItemWithTransformedKeysAndValues(item));
         mapData = parseResults.data;
-        fileError = getMapFileError(parseResults, networkFileOrUrl != null);
-        if (!fileError && networkFileOrUrl) {
+        dataError = getMapDataError(parseResults, networkFileOrUrl != null);
+        if (!dataError && networkFileOrUrl) {
           self.postMessage({
             type: 'update loading screen',
-            data: { processType: processTypes.READING_NETWORK_FILE },
+            data: { processType: processTypes.READING_NETWORK_DATA },
           });
           parse(networkFileOrUrl, {
             header: false,
@@ -357,10 +316,10 @@ function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
             delimitersToGuess: ['\t', ';', ','],
             dynamicTyping: true,
             error: error => {
-              fileError = getFileReaderError(error, fileTypeKeys.VOSVIEWER_NETWORK_FILE);
+              dataError = getFileReaderError(error, dataTypeKeys.VOSVIEWER_NETWORK_DATA);
               self.postMessage({
-                type: 'end parse vosviewer-map-network file',
-                data: { fileError },
+                type: 'end parse vosviewer-map-network data',
+                data: { dataError },
               });
             },
             complete: parseResults => {
@@ -371,17 +330,17 @@ function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
                 }
               }
               networkData = parseResults.data;
-              fileError = getNetworkFileError(parseResults, mapData);
+              dataError = getNetworkDataError(parseResults, mapData);
               self.postMessage({
-                type: 'end parse vosviewer-map-network file',
-                data: { fileError, mapData, networkData },
+                type: 'end parse vosviewer-map-network data',
+                data: { dataError, mapData, networkData },
               });
             }
           });
         } else {
           self.postMessage({
-            type: 'end parse vosviewer-map-network file',
-            data: { fileError, mapData, networkData },
+            type: 'end parse vosviewer-map-network data',
+            data: { dataError, mapData, networkData },
           });
         }
       }
@@ -389,7 +348,7 @@ function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
   } else if (networkFileOrUrl) {
     self.postMessage({
       type: 'update loading screen',
-      data: { processType: processTypes.READING_NETWORK_FILE },
+      data: { processType: processTypes.READING_NETWORK_DATA },
     });
     parse(networkFileOrUrl, {
       header: false,
@@ -398,10 +357,10 @@ function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
       delimitersToGuess: ['\t', ';', ','],
       dynamicTyping: true,
       error: error => {
-        fileError = getFileReaderError(error, fileTypeKeys.VOSVIEWER_NETWORK_FILE);
+        dataError = getFileReaderError(error, dataTypeKeys.VOSVIEWER_NETWORK_DATA);
         self.postMessage({
-          type: 'end parse vosviewer-map-network file',
-          data: { fileError, mapData, networkData },
+          type: 'end parse vosviewer-map-network data',
+          data: { dataError, mapData, networkData },
         });
       },
       complete: results => {
@@ -412,8 +371,8 @@ function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
           }
         }
         networkData = results.data;
-        fileError = getNetworkFileError(results, mapData);
-        if (!fileError) {
+        dataError = getNetworkDataError(results, mapData);
+        if (!dataError) {
           const itemIds1 = networkData.map(link => link[0]);
           const itemIds2 = networkData.map(link => link[1]);
           const uniqueItemIds = _uniq(_concat(itemIds1, itemIds2));
@@ -421,8 +380,8 @@ function _parseMapNetworkFile(mapFileOrUrl, networkFileOrUrl) {
           mapData = uniqueItemIds.map(itemId => ({ id: itemId }));
         }
         self.postMessage({
-          type: 'end parse vosviewer-map-network file',
-          data: { fileError, mapData, networkData },
+          type: 'end parse vosviewer-map-network data',
+          data: { dataError, mapData, networkData },
         });
       }
     });

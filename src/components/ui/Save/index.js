@@ -2,15 +2,15 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { IconButton, Tooltip } from '@material-ui/core';
-import SaveIcon from '@material-ui/icons/Save';
+import { IconButton, Tooltip } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
 
-import { ConfigStoreContext, FileDataStoreContext, VisualizationStoreContext } from 'store/stores';
+import { ConfigStoreContext, DataStoreContext, VisualizationStoreContext } from 'store/stores';
 import * as s from './styles';
 
 const Save = observer(() => {
   const configStore = useContext(ConfigStoreContext);
-  const fileDataStore = useContext(FileDataStoreContext);
+  const dataStore = useContext(DataStoreContext);
   const visualizationStore = useContext(VisualizationStoreContext);
   const jsonFileEl = useRef(null);
 
@@ -20,7 +20,7 @@ const Save = observer(() => {
   );
 
   const saveJsonFile = () => {
-    const jsonData = visualizationStore.getJsonData(fileDataStore.getTerminology(), fileDataStore.getTemplates(), fileDataStore.getStyles(), fileDataStore.parameters, fileDataStore.getColorSchemes(), fileDataStore.getClusters());
+    const jsonData = visualizationStore.getJsonData(dataStore.getTerminology(), dataStore.getTemplates(), dataStore.getStyles(), dataStore.parameters, dataStore.getColorSchemes(), dataStore.getClusters());
     const data = JSON.stringify(jsonData, null, 4);
     const blob = new Blob([data], { type: 'application/octet-stream' });
     const dataURL = URL.createObjectURL(blob);

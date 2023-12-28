@@ -1,13 +1,43 @@
-import ReactHtmlParser, { convertNodeToElement } from 'react-html-parser';
+/* eslint-disable consistent-return */
+import HTMLReactParser from 'html-react-parser';
 import { addHook, sanitize } from "dompurify";
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 
-const ALLOWED_TAGS_IN_HTML_STRING = ["p", "a", "br", "b", "i"];
+export function cleanPlainText(plainText) {
+  if (!plainText) return;
+  const sanitizedText = sanitize(plainText,
+    {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+      KEEP_CONTENT: true
+    });
+
+  return sanitizedText;
+}
+
+export function parseFormattedText(formattedText) {
+  if (!formattedText) return;
+  addHook('afterSanitizeAttributes', (node) => {
+    if ('target' in node) {
+      node.setAttribute('target', '_blank'); // Let all links open a new window.
+      node.setAttribute('rel', 'noopener noreferrer'); // Prevent reverse tabnabbing attacks (https://www.owasp.org/index.php/Reverse_Tabnabbing).
+    }
+  });
+  const sanitizedDescription = sanitize(formattedText); // Sanitize HTML and prevents XSS attacks (https://owasp.org/www-community/attacks/xss/).
+
+  return HTMLReactParser(sanitizedDescription, {
+    replace: node => {
+      if (node.name === 'a') {
+        node.attribs.class = css(`text-decoration: underline; color: inherit;`);
+      }
+    }
+  });
+}
 
 export function parseDescription(object, templateType, stores) {
-  const { fileDataStore, visualizationStore } = stores;
+  const { dataStore, visualizationStore } = stores;
   if (!object) return;
-  const description = object.description || fileDataStore.templates[templateType];
+  const description = object.description || dataStore.templates[templateType];
   if (!description) return;
   addHook('afterSanitizeAttributes', (node) => {
     if ('target' in node) {
@@ -17,26 +47,19 @@ export function parseDescription(object, templateType, stores) {
   });
   const sanitizedDescription = sanitize(description); // Sanitize HTML and prevents XSS attacks (https://owasp.org/www-community/attacks/xss/).
 
-  function transformDescription(node, index) {
-    if (node.attribs) {
-      if (node.attribs.class && typeof fileDataStore.styles[node.attribs.class] === 'string') {
-        node.attribs.class = css(fileDataStore.styles[node.attribs.class]);
+
+  return HTMLReactParser(sanitizedDescription, {
+    replace: node => {
+      if (node.attribs) {
+        if (node.attribs.class && typeof dataStore.styles[node.attribs.class] === 'string') {
+          node.attribs.class = css(dataStore.styles[node.attribs.class]);
+        }
+        if (node.name === 'a' && node.attribs.href) node.attribs.href = _replaceDescriptionPlaceholders(node.attribs.href, object, templateType, visualizationStore);
+        if (node.name === 'img' && node.attribs.src) node.attribs.src = _replaceDescriptionPlaceholders(node.attribs.src, object, templateType, visualizationStore);
       }
-      if (node.name === 'a' && node.attribs.href) node.attribs.href = _replaceDescriptionPlaceholders(node.attribs.href, object, templateType, visualizationStore);
-      if (node.name === 'img' && node.attribs.src) node.attribs.src = _replaceDescriptionPlaceholders(node.attribs.src, object, templateType, visualizationStore);
+      if (node.data) node.data = _replaceDescriptionPlaceholders(node.data, object, templateType, visualizationStore);
     }
-    if (node.data) {
-      const htmlDataString = _replaceDescriptionPlaceholders(node.data, object, templateType, visualizationStore);
-      node.data = ReactHtmlParser(
-        sanitize(htmlDataString, { ALLOWED_TAGS: ALLOWED_TAGS_IN_HTML_STRING })
-      );
-    }
-
-    return convertNodeToElement(node, index, transformDescription);
-  }
-
-  // eslint-disable-next-line consistent-return
-  return ReactHtmlParser(sanitizedDescription, { transform: transformDescription });
+  });
 }
 
 function _replaceDescriptionPlaceholders(text, object, templateType, visualizationStore) {

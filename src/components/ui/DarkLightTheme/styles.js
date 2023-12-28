@@ -1,6 +1,6 @@
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 
 export const themeButton = css`
   label: theme-button;
-  margin-left: -10px;
+  margin-left: -2px;
 `;

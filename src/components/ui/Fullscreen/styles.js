@@ -1,6 +1,6 @@
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 
 export const fullscreenButton = css`
   label: fullscreen;
-  margin-left: -10px;
+  margin-left: -2px;
 `;

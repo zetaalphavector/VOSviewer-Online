@@ -1,4 +1,4 @@
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { color } from 'd3-color';
 import { device, media, roriPantoneCoolGray4 } from 'utils/variables-rori';
 
@@ -77,7 +77,7 @@ export const panel = css`
       display: inline-block;
       margin-top: 6px;
       padding-right: 10px;
-      font-size: 12pt;
+      font-size: 1rem;
       font-weight: 600;
     }
   
@@ -92,8 +92,8 @@ export const panel = css`
 
 export const menuItemStyle = css`
   width: 100%;
-  display: inline-block;
-  font-size: 10pt;
+  // display: inline-block;
+  font-size: 0.875rem;
   overflow: hidden;
   text-overflow: ellipsis;
 `;

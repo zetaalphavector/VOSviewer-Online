@@ -1,5 +1,5 @@
-import { css } from 'emotion';
-import { grey } from '@material-ui/core/colors';
+import { css } from '@emotion/css';
+import { grey } from '@mui/material/colors';
 import { panelMargin } from 'utils/variables';
 
 export const previewIsOpen = css`
@@ -16,6 +16,7 @@ export const zoomPanel = (previewPanelWidth) => css`
   &${`.${previewIsOpen}`} {
     right: ${previewPanelWidth + panelMargin}px;
   }
+  line-height: 0.6;
 `;
 
 export const iconButton = css`

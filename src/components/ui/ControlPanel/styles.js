@@ -1,18 +1,22 @@
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { controlPanelWidth } from 'utils/variables';
 
 export const open = css`
   label: control-panel-open;
+
+  z-index: 0;
 `;
 
 export const closed = css`
   label: control-panel-closed;
+
+  z-index: 0;
 `;
 
 export const controlPanel = css`
   label: control-panel;
   top: 0;
-  position: fixed;
+  position: absolute;
   width: ${controlPanelWidth - 2}px;
   height: 100%;
   background-color: rgba(255, 255, 255, 0.95);
@@ -47,11 +51,15 @@ export const closeOpenButton = css`
 export const closeButton = css`
   label: close-button;
   left: calc(${controlPanelWidth}px - 15px);
+  width: max-content;
+  line-height: 0.6;
 `;
 
 export const openButton = css`
   label: open-button;
   left: calc(${controlPanelWidth}px - 10px);
+  width: max-content;
+  line-height: 0.6;
 `;
 
 export const contentBox = css`
@@ -61,7 +69,6 @@ export const contentBox = css`
   overflow-x: hidden;
   overflow-y: scroll;
   background-color: inherit;
-  border-right: 1px solid #fff;
 `;
 
 export const subtitle = css`
@@ -74,6 +81,7 @@ export const subtitle = css`
 export const switchBox = css`
   label: switch-box;
   display: flex;
+  margin: 4px 3px 4px 0px;
 `;
 
 export const formControlLabel = css`
@@ -94,6 +102,7 @@ export const switchLabel = css`
 export const sliderBox = css`
   label: slider-box;
   margin: 4px 2px 12px 0px;
+  line-height: 0px;
 `;
 
 export const sliderBoxLabel = css`
@@ -132,7 +141,7 @@ export const expansionPanelItems = (fontFamily) => css`
 `;
 
 export const expansionPanelButton = css`
-  margin-top: 20px !important;
+  margin: 10px 0px !important;
 `;
 
 export const colorPickerItem = css`
@@ -153,17 +162,18 @@ export const colorPickerTitle = (darkTheme) => css`
 export const listItem = css`
   label: list-item;
   margin: 0px 0px 8px 0px;
+  line-height: 1rem;
   cursor: pointer;
 `;
 
 export const labelPartNormal = css`
   label: label-part-normal;
   font-weight: 300;
-  font-size: 10pt;
+  font-size: 0.875rem;
 `;
 
 export const labelPartHighlighted = css`
   label: label-part-highlighted;
   font-weight: 500;
-  font-size: 10pt;
+  font-size: 0.875rem;
 `;

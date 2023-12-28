@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Slider, IconButton } from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+import { Slider, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { min } from 'd3-array';
 
 import { UiRoriStoreContext, UiStoreContext, VisualizationStoreContext } from 'store/stores';
@@ -107,7 +107,7 @@ const LegendPanel = observer(() => {
         >
           {uiStore.colorIndex > 0 && (
             <ScoreColorLegend
-              canvasWidth={min([350, uiStore.windowInnerWidth - 15])}
+              canvasWidth={min([350, uiStore.componentWidth - 15])}
               canvasHeight={48}
               customFont="Nexa Light"
             />

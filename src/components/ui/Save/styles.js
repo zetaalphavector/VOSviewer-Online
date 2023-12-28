@@ -1,6 +1,6 @@
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 
 export const saveButton = css`
   label: save;
-  margin-left: -10px;
+  margin-left: -2px;
 `;

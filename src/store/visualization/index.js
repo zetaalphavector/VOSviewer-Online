@@ -1,6 +1,6 @@
 /* eslint-disable no-bitwise */
-import ReactHtmlParser from 'react-html-parser';
-import { extendObservable } from 'mobx';
+import HTMLReactParser from 'html-react-parser';
+import { makeAutoObservable } from 'mobx';
 import { scaleLinear, scaleOrdinal } from 'd3-scale';
 import { extent, sum } from 'd3-array';
 import { color } from 'd3-color';
@@ -21,61 +21,16 @@ import _isNaN from 'lodash/isNaN';
 import _uniq from 'lodash/uniq';
 
 import {
-  canvasMargin,
-  circleAvgDiameter,
-  circleColors,
-  circleMinDiameter,
-  clusterColors,
-  defaultParameterValues,
-  defaultTerminology,
-  labelFontSizeScalingConstant,
-  labelMinFontSize,
-  lineAvgWidth,
-  lineMinWidth,
-  mapFileHeaders,
-  parameterKeys,
-  scoreColorLegendDesiredNTicks,
-  scoreColorLegendPropScoresBetweenMinAndMax
+  canvasMargin, clusterColors, circleColors, circleMinDiameter, circleAvgDiameter, lineMinWidth, lineAvgWidth, labelMinFontSize, labelFontSizeScalingConstant, mapDataHeaders, scoreColorLegendPropScoresBetweenMinAndMax, scoreColorLegendDesiredNTicks, parameterKeys, defaultParameterValues, defaultTerminology
 } from 'utils/variables';
-import { calcDistance, ItemStatus, LinkStatus, VisualizationStatus } from 'utils/drawing';
+import { ItemStatus, LinkStatus, VisualizationStatus, calcDistance } from 'utils/drawing';
 import {
-  getClusterKeys,
-  getColorScheme,
-  getLabelValue,
-  getNiceMaxValue,
-  getNiceMinValue,
-  getScoreKeys,
-  getWeightKeys
+  getLabelValue, getClusterKeys, getWeightKeys, getScoreKeys, getColorScheme, getNiceMinValue, getNiceMaxValue
 } from 'utils/helpers';
 
 export default class State {
   constructor(state = {}) {
-    extendObservable(
-      this,
-      {
-        lastDataUpdate: Date.now(),
-        lastItemUpdate: Date.now(),
-        lastLinkUpdate: Date.now(),
-        hoveredItem: undefined,
-        clickedItem: undefined,
-        hoveredLink: undefined,
-        clickedLink: undefined,
-        zTransform: { x: 0, y: 0, k: 1 },
-        weightKeysCustomTerminology: [],
-        scoreKeys: [],
-        clusterKeyIndex: 0,
-        weightIndex: 0,
-        scoreIndex: 0,
-        scoreColorSchemeName: defaultParameterValues[parameterKeys.SCORE_COLORS],
-        scoreColorLegendMinScore: 0,
-        scoreColorLegendMaxScore: 0,
-        scoreColorLegendMinScoreAutoValue: true,
-        scoreColorLegendMaxScoreAutoValue: true,
-        normalizeScoresMethodName: 'Do not normalize',
-        degreesToRotate: 90,
-      },
-      state
-    );
+    makeAutoObservable(this, state);
     this.largestComponent = defaultParameterValues[parameterKeys.LARGEST_COMPONENT];
     this.initialZoomLevel = defaultParameterValues[parameterKeys.ZOOM_LEVEL];
     this.canvasMargin = { left: canvasMargin, right: canvasMargin, top: canvasMargin, bottom: canvasMargin };
@@ -136,24 +91,56 @@ export default class State {
     ];
     this.totalLinkStrength = 0;
     this.itemLinkData = {};
-    this.getScreenshotImage = () => {
-    };
-    this.getDefaultLinkCanvasImage = () => {
-    };
-    this.getDefaultItemCircleCanvasImage = () => {
-    };
-    this.getHighlightedItemCircleLinkCanvasImage = () => {
-    };
-    this.getItemLabelCanvasImage = () => {
-    };
-    this.getScoreColorLegendCanvasImage = () => {
-    };
-    this.getSizeLegendCanvasImage = () => {
-    };
-    this.getClusterLegendCanvasImage = () => {
-    };
+    this.getScreenshotImage = () => {};
+    this.getDefaultLinkCanvasImage = () => {};
+    this.getDefaultItemCircleCanvasImage = () => {};
+    this.getHighlightedItemCircleLinkCanvasImage = () => {};
+    this.getItemLabelCanvasImage = () => {};
+    this.getScoreColorLegendCanvasImage = () => {};
+    this.getSizeLegendCanvasImage = () => {};
+    this.getClusterLegendCanvasImage = () => {};
     this.getLogoImages = () => ([]);
   }
+
+  lastDataUpdate = Date.now()
+
+  lastItemUpdate = Date.now()
+
+  lastLinkUpdate = Date.now()
+
+  hoveredItem = undefined
+
+  clickedItem = undefined
+
+  hoveredLink = undefined
+
+  clickedLink = undefined
+
+  zTransform = { x: 0, y: 0, k: 1 }
+
+  weightKeysCustomTerminology = []
+
+  scoreKeys = []
+
+  clusterKeyIndex = 0
+
+  weightIndex = 0
+
+  scoreIndex = 0
+
+  scoreColorSchemeName = defaultParameterValues[parameterKeys.SCORE_COLORS]
+
+  scoreColorLegendMinScore = 0
+
+  scoreColorLegendMaxScore = 0
+
+  scoreColorLegendMinScoreAutoValue = true
+
+  scoreColorLegendMaxScoreAutoValue = true
+
+  normalizeScoresMethodName = 'Do not normalize'
+
+  degreesToRotate = 90
 
   get itemsOrLinksWithUrl() {
     const itemsWithUrl = this.items.filter(item => item.url);
@@ -580,7 +567,7 @@ export default class State {
       item._fontSize = this.pixelRatio * (scale * labelMinFontSize + labelFontSizeScalingConstant * item._normalizedWeight ** itemSizeVariation);
       if (this.labelCanvasContext) {
         this.labelCanvasContext.font = `${item._fontSize}px ${fontFamily}`;
-        const label = ReactHtmlParser(item.label)[0];
+        const label = HTMLReactParser(item.label);
         item._labelText = (label || '').slice(0, maxLabelLength) || '';
         item._labelTextWidth = this.labelCanvasContext.measureText(item._labelText).width;
       }
@@ -797,7 +784,7 @@ export default class State {
     this.largestComponent = largestComponent;
   }
 
-  setLayout(coordinates) {
+  updateItemCoordinates(coordinates) {
     _each(coordinates[0], (x, i) => {
       const item = _find(this.items, d => d._initialOrderId === i);
       if (item) {
@@ -809,10 +796,10 @@ export default class State {
     this.updateLabelScalingFactors();
   }
 
-  setClusters(clustering, darkTheme) {
-    this.clusterKey = mapFileHeaders.CLUSTER;
+  updateItemClusters(clusters, darkTheme) {
+    this.clusterKey = mapDataHeaders.CLUSTER;
     _each(this.items, (item) => {
-      const cluster = clustering.cluster[this.itemIdToIndex[item.id]];
+      const cluster = clusters[this.itemIdToIndex[item.id]];
       item[this.clusterKey] = !_isNil(cluster) ? cluster + 1 : undefined;
     });
     this.clusters = _filter(_keys(_groupBy(this.items, this.clusterKey)), d => d !== "undefined");

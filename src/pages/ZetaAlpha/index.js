@@ -1,8 +1,7 @@
 /* global NODE_ENV */
 import React, { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { CssBaseline } from '@material-ui/core';
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import _isPlainObject from 'lodash/isPlainObject';
 
 import VisualizationComponent from 'components/visualization/VisualizationComponent';
@@ -14,30 +13,29 @@ import DarkLightTheme from 'components/ui/DarkLightTheme';
 import Fullscreen from 'components/ui/Fullscreen';
 import Info from 'components/ui/Info';
 import ControlPanel from 'components/ui/ControlPanel';
-import InfoPanel from 'components/ui/InfoPanel';
+import InfoPanel from 'components/ui-zeta-alpha/InfoPanel';
 import URLPanel from 'components/ui/URLPanel';
 import LegendPanel from 'components/ui/LegendPanel';
 import ZoomPanel from 'components/ui/ZoomPanel';
 import ErrorDialog from 'components/ui/ErrorDialog';
 import UnconnectedItemsDialog from 'components/ui/UnconnectedItemsDialog';
 import LoadingScreen from 'components/ui/LoadingScreen';
+import vosviewerLogoLowRes from 'assets/images/vosviewer-logo-low-res.png';
+import vosviewerLogoHighRes from 'assets/images/vosviewer-logo-high-res.png';
+import vosviewerLogoDarkLowRes from 'assets/images/vosviewer-logo-dark-low-res.png';
+import vosviewerLogoDarkHighRes from 'assets/images/vosviewer-logo-dark-high-res.png';
 import zetaalphaLogo from 'assets/images/zeta-alpha-logo.svg';
 import zetaalphaLogoDark from 'assets/images/zeta-alpha-logo-dark.svg';
 
 import {
-  ClusteringStoreContext,
-  ConfigStoreContext,
-  LayoutStoreContext,
-  QueryStringStoreContext,
-  UiStoreContext,
-  VisualizationStoreContext,
-  WebworkerStoreContext
+  ClusteringStoreContext, ConfigStoreContext, LayoutStoreContext, UiStoreContext, VisualizationStoreContext, QueryStringStoreContext, WebworkerStoreContext
 } from 'store/stores';
 import { getProxyUrl } from 'utils/helpers';
-import { panelBackgroundColors, parameterKeys, visualizationBackgroundColors } from 'utils/variables';
+import { parameterKeys, defaultMuiTheme } from 'utils/variables';
+import 'utils/fonts/Roboto';
 import * as s from './style';
 
-const ZetaAlpha = observer(({ queryString }) => {
+const ZetaAlpha = observer(({ queryString = {}, fullscreenHandle }) => {
   const clusteringStore = useContext(ClusteringStoreContext);
   const configStore = useContext(ConfigStoreContext);
   const layoutStore = useContext(LayoutStoreContext);
@@ -59,174 +57,72 @@ const ZetaAlpha = observer(({ queryString }) => {
     }
 
     const proxy = (NODE_ENV !== 'development') ? configStore.proxyUrl : undefined;
-    let mapURL = getProxyUrl(proxy, queryString[parameterKeys.MAP]);
-    let networkURL = getProxyUrl(proxy, queryString[parameterKeys.NETWORK]);
-    let jsonURL = getProxyUrl(proxy, queryString[parameterKeys.JSON]);
-    const authToken = queryString[parameterKeys.AUTH_TOKEN];
-    if (authToken) {
-      window.localStorage.setItem('token', authToken);
-    } else {
-      window.localStorage.removeItem('token');
-    }
-    if (NODE_ENV === 'development' && !mapURL && !networkURL && !jsonURL) {
-      jsonURL = 'data/Zeta-Alpha_ICLR2021.json';
-    } else if (!mapURL && !networkURL && !jsonURL) {
-      mapURL = getProxyUrl(proxy, configStore.parameters.map);
-      networkURL = getProxyUrl(proxy, configStore.parameters.network);
-      jsonURL = getProxyUrl(proxy, configStore.parameters.json);
+    let mapUrl = getProxyUrl(proxy, queryString[parameterKeys.MAP]);
+    let networkUrl = getProxyUrl(proxy, queryString[parameterKeys.NETWORK]);
+    let jsonUrlOrObject = queryString[parameterKeys.JSON] instanceof Object ? queryString[parameterKeys.JSON] : getProxyUrl(proxy, queryString[parameterKeys.JSON]);
+    if (NODE_ENV === 'development' && !mapUrl && !networkUrl && !jsonUrlOrObject) {
+      jsonUrlOrObject = 'data/Zeta-Alpha_ICLR2022.json';
+    } else if (!mapUrl && !networkUrl && !jsonUrlOrObject) {
+      mapUrl = getProxyUrl(proxy, configStore.parameters.map);
+      networkUrl = getProxyUrl(proxy, configStore.parameters.network);
+      jsonUrlOrObject = getProxyUrl(proxy, configStore.parameters.json);
     }
 
-    if (mapURL || networkURL) {
-      webworkerStore.openMapNetworkFile(mapURL, networkURL);
-    } else if (jsonURL) {
-      webworkerStore.openJsonFile(jsonURL);
+    if (mapUrl || networkUrl) {
+      webworkerStore.openMapNetworkData(mapUrl, networkUrl);
+    } else if (jsonUrlOrObject) {
+      webworkerStore.openJsonData(jsonUrlOrObject);
     } else {
+      uiStore.setIntroDialogIsOpen(false);
       configStore.setUrlPreviewPanelIsOpen(false);
       uiStore.setLoadingScreenIsOpen(false);
     }
   }, []);
 
   useEffect(() => {
-    visualizationStore.setGetLogoImages(() => ([zetaalphaLogoEl.current]));
-  }, [zetaalphaLogoEl]);
+    visualizationStore.setGetLogoImages(() => ([vosviewerLogoEl.current, zetaalphaLogoEl.current]));
+  }, [vosviewerLogoEl, zetaalphaLogoEl]);
 
   const muiTheme = (isDark) => {
     const { uiStyle } = configStore;
+    const defaultValues = defaultMuiTheme(isDark, uiStyle);
     const theme = createTheme({
-      typography: {
-        fontFamily: uiStyle.font_family,
-        useNextVariants: true,
+      typography: defaultValues.typography,
+      palette: defaultValues.palette,
+      components: {
+        ...defaultValues.components,
+        MuiCircularProgress: {
+          styleOverrides: {
+            colorPrimary: {
+              color: '#757575',
+            },
+          },
+        },
       },
-      palette: {
-        type: isDark ? 'dark' : 'light',
-        background: {
-          default: isDark ? visualizationBackgroundColors.DARK : visualizationBackgroundColors.LIGHT,
-          paper: isDark ? panelBackgroundColors.DARK : panelBackgroundColors.LIGHT,
-        },
-        primary: {
-          main: uiStyle.palette_primary_main_color,
-        },
-      }
     });
-
-    theme.overrides = {
-      MuiInputBase: {
-        root: {
-          fontSize: '0.875rem',
-        },
-      },
-      MuiMenuItem: {
-        root: {
-          fontSize: '0.875rem',
-        },
-      },
-      MuiButton: {
-        label: {
-          fontWeight: 400,
-          textTransform: 'none',
-        }
-      },
-      MuiAccordion: {
-        root: {
-          'box-shadow': 'none',
-          'background-color': 'transparent',
-          '&:before': {
-            'background-color': 'transparent',
-          },
-          '&$expanded': {
-            margin: '0px 0px 12px',
-          },
-        }
-      },
-      MuiAccordionSummary: {
-        root: {
-          padding: '0px',
-          height: '48px',
-          '&$expanded': {
-            height: '48px',
-            'min-height': '48px',
-          },
-        }
-      },
-      MuiAccordionDetails: {
-        root: {
-          padding: '0px',
-        }
-      },
-      MuiListItem: {
-        root: {
-          'padding-top': '0px',
-          'padding-bottom': '0px',
-        }
-      },
-      MuiListItemText: {
-        root: {
-          'margin-top': '0px',
-          'margin-bottom': '0px',
-        }
-      },
-      MuiTab: {
-        root: {
-          fontSize: theme.typography.pxToRem(13),
-        }
-      },
-      MuiSvgIcon: {
-        fontSizeSmall: {
-          fontSize: theme.typography.pxToRem(20),
-        }
-      },
-      MuiFormControl: {
-        root: {
-          margin: '4px 0px 12px 0px',
-          width: '100%',
-        }
-      },
-      MuiFormControlLabel: {
-        label: {
-          fontSize: theme.typography.pxToRem(14),
-        }
-      },
-      MuiCircularProgress: {
-        colorPrimary: {
-          color: '#757575',
-        },
-      }
-    };
     return theme;
   };
 
   return (
     <ThemeProvider theme={muiTheme(uiStore.darkTheme)}>
       <div className={s.app(uiStore.darkTheme)}>
-        <CssBaseline />
         <VisualizationComponent customFont={configStore.uiStyle.font_family} />
-        {configStore.fullscreen && <img
+        <img
           className={s.vosviewerLogo}
-          src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo}
-          srcSet={`${uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} 2x`}
+          src={uiStore.darkTheme ? vosviewerLogoDarkLowRes : vosviewerLogoLowRes}
+          srcSet={`${uiStore.darkTheme ? vosviewerLogoDarkHighRes : vosviewerLogoHighRes} 2x`}
           alt="VOSviewer"
           ref={vosviewerLogoEl}
-        />}
-        {configStore.fullscreen && <img
-          className={s.zetaalphaLogo}
-          src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo}
-          alt="Zeta Alpha"
-          ref={zetaalphaLogoEl}
-        />}
-        <div
-          className={`${s.actionIcons(configStore.urlPreviewPanelWidth)} ${configStore.urlPreviewPanel ? s.previewIsOpen : ''}`}
-        >
+        />
+        <img className={s.zetaalphaLogo} src={uiStore.darkTheme ? zetaalphaLogoDark : zetaalphaLogo} alt="Zeta Alpha" ref={zetaalphaLogoEl} />
+        <div className={`${s.actionIcons(configStore.urlPreviewPanelWidth)} ${configStore.urlPreviewPanel ? s.previewIsOpen : ''}`}>
           <Open />
-          {configStore.fullscreen && (
-            <>
-              <Save />
-              <Share />
-              <Screenshot />
-              <DarkLightTheme />
-              <Info />
-            </>
-          )}
-          <Fullscreen />
+          <Save />
+          <Share />
+          <Screenshot />
+          <DarkLightTheme />
+          <Fullscreen enter={fullscreenHandle.enter} exit={fullscreenHandle.exit} active={fullscreenHandle.active} />
+          <Info />
         </div>
         <URLPanel />
         <LegendPanel />

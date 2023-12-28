@@ -1,8 +1,7 @@
 /* global NODE_ENV */
 import React, { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { CssBaseline } from '@material-ui/core';
-import { ThemeProvider, createTheme } from '@material-ui/core/styles';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import _isPlainObject from 'lodash/isPlainObject';
 
 import VisualizationComponent from 'components/visualization/VisualizationComponent';
@@ -30,10 +29,11 @@ import {
   ClusteringStoreContext, ConfigStoreContext, VisualizationStoreContext, LayoutStoreContext, UiStoreContext, QueryStringStoreContext, WebworkerStoreContext
 } from 'store/stores';
 import { getProxyUrl } from 'utils/helpers';
-import { parameterKeys, panelBackgroundColors, visualizationBackgroundColors } from 'utils/variables';
+import { parameterKeys, defaultMuiTheme } from 'utils/variables';
+import 'utils/fonts/Roboto';
 import * as s from './style';
 
-const VOSviewer = observer(({ queryString }) => {
+const VOSviewer = observer(({ queryString = {}, fullscreenHandle }) => {
   const clusteringStore = useContext(ClusteringStoreContext);
   const configStore = useContext(ConfigStoreContext);
   const layoutStore = useContext(LayoutStoreContext);
@@ -54,23 +54,24 @@ const VOSviewer = observer(({ queryString }) => {
     }
 
     const proxy = (NODE_ENV !== 'development') ? configStore.proxyUrl : undefined;
-    let mapURL = getProxyUrl(proxy, queryString[parameterKeys.MAP]);
-    let networkURL = getProxyUrl(proxy, queryString[parameterKeys.NETWORK]);
-    let jsonURL = getProxyUrl(proxy, queryString[parameterKeys.JSON]);
-    if (NODE_ENV === 'development' && !mapURL && !networkURL && !jsonURL) {
-      mapURL = 'data/JOI_2007-2016_co-authorship_map.txt';
-      networkURL = 'data/JOI_2007-2016_co-authorship_network.txt';
-    } else if (!mapURL && !networkURL && !jsonURL) {
-      mapURL = getProxyUrl(proxy, configStore.parameters.map);
-      networkURL = getProxyUrl(proxy, configStore.parameters.network);
-      jsonURL = getProxyUrl(proxy, configStore.parameters.json);
+    let mapUrl = getProxyUrl(proxy, queryString[parameterKeys.MAP]);
+    let networkUrl = getProxyUrl(proxy, queryString[parameterKeys.NETWORK]);
+    let jsonUrlOrObject = queryString[parameterKeys.JSON] instanceof Object ? queryString[parameterKeys.JSON] : getProxyUrl(proxy, queryString[parameterKeys.JSON]);
+    if (NODE_ENV === 'development' && !mapUrl && !networkUrl && !jsonUrlOrObject) {
+      mapUrl = 'data/JOI_2007-2016_co-authorship_map.txt';
+      networkUrl = 'data/JOI_2007-2016_co-authorship_network.txt';
+    } else if (!mapUrl && !networkUrl && !jsonUrlOrObject) {
+      mapUrl = getProxyUrl(proxy, configStore.parameters.map);
+      networkUrl = getProxyUrl(proxy, configStore.parameters.network);
+      jsonUrlOrObject = getProxyUrl(proxy, configStore.parameters.json);
     }
 
-    if (mapURL || networkURL) {
-      webworkerStore.openMapNetworkFile(mapURL, networkURL);
-    } else if (jsonURL) {
-      webworkerStore.openJsonFile(jsonURL);
+    if (mapUrl || networkUrl) {
+      webworkerStore.openMapNetworkData(mapUrl, networkUrl);
+    } else if (jsonUrlOrObject) {
+      webworkerStore.openJsonData(jsonUrlOrObject);
     } else {
+      uiStore.setIntroDialogIsOpen(true);
       configStore.setUrlPreviewPanelIsOpen(false);
       uiStore.setLoadingScreenIsOpen(false);
     }
@@ -82,108 +83,20 @@ const VOSviewer = observer(({ queryString }) => {
 
   const muiTheme = (isDark) => {
     const { uiStyle } = configStore;
+    const defaultValues = defaultMuiTheme(isDark, uiStyle);
     const theme = createTheme({
-      typography: {
-        fontFamily: uiStyle.font_family,
-        useNextVariants: true,
+      typography: defaultValues.typography,
+      palette: defaultValues.palette,
+      components: {
+        ...defaultValues.components,
       },
-      palette: {
-        type: isDark ? 'dark' : 'light',
-        background: {
-          default: isDark ? visualizationBackgroundColors.DARK : visualizationBackgroundColors.LIGHT,
-          paper: isDark ? panelBackgroundColors.DARK : panelBackgroundColors.LIGHT,
-        },
-        primary: {
-          main: uiStyle.palette_primary_main_color,
-        },
-      }
     });
-
-    theme.overrides = {
-      MuiInputBase: {
-        root: {
-          fontSize: '0.875rem',
-        },
-      },
-      MuiMenuItem: {
-        root: {
-          fontSize: '0.875rem',
-        },
-      },
-      MuiButton: {
-        label: {
-          fontWeight: 400,
-          textTransform: 'none',
-        }
-      },
-      MuiAccordion: {
-        root: {
-          'box-shadow': 'none',
-          'background-color': 'transparent',
-          '&:before': {
-            'background-color': 'transparent',
-          },
-          '&$expanded': {
-            margin: '0px 0px 12px',
-          },
-        },
-      },
-      MuiAccordionSummary: {
-        root: {
-          padding: '0px',
-          height: '48px',
-          '&$expanded': {
-            height: '48px',
-            'min-height': '48px',
-          },
-        }
-      },
-      MuiAccordionDetails: {
-        root: {
-          padding: '0px',
-        }
-      },
-      MuiListItem: {
-        root: {
-          'padding-top': '0px',
-          'padding-bottom': '0px',
-        }
-      },
-      MuiListItemText: {
-        root: {
-          'margin-top': '0px',
-          'margin-bottom': '0px',
-        }
-      },
-      MuiTab: {
-        root: {
-          fontSize: theme.typography.pxToRem(13),
-        }
-      },
-      MuiSvgIcon: {
-        fontSizeSmall: {
-          fontSize: theme.typography.pxToRem(20),
-        }
-      },
-      MuiFormControl: {
-        root: {
-          margin: '4px 0px 12px 0px',
-          width: '100%',
-        }
-      },
-      MuiFormControlLabel: {
-        label: {
-          fontSize: theme.typography.pxToRem(14),
-        }
-      }
-    };
     return theme;
   };
 
   return (
     <ThemeProvider theme={muiTheme(uiStore.darkTheme)}>
       <div className={s.app(uiStore.darkTheme)}>
-        <CssBaseline />
         <VisualizationComponent customFont={configStore.uiStyle.font_family} />
         <img
           className={s.vosviewerLogo}
@@ -198,8 +111,8 @@ const VOSviewer = observer(({ queryString }) => {
           <Share />
           <Screenshot />
           <DarkLightTheme />
-          <Fullscreen />
           <Info />
+          <Fullscreen enter={fullscreenHandle.enter} exit={fullscreenHandle.exit} active={fullscreenHandle.active} />
         </div>
         <URLPanel />
         <LegendPanel />
