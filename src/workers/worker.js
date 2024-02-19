@@ -47,7 +47,6 @@ self.addEventListener("message", (event) => {
         options.mapData,
         options.networkData,
       );
-      console.log("xxx", { nNodes, edges, edgeWeights, itemIdToIndex });
       networkNormalizer.init(nNodes, edges, edgeWeights);
       const nItemsNetwork = networkNormalizer.unnormalizedNetwork.getNNodes();
       const networkComponents = networkNormalizer.unnormalizedNetwork.identifyComponents();
@@ -63,7 +62,6 @@ self.addEventListener("message", (event) => {
         nItemsNetwork: hasUnconnectedItems && nItemsNetwork,
         nItemsLargestComponent: hasUnconnectedItems && nItemsLargestComponent,
       };
-      console.log("end process data ->", data);
       self.postMessage({
         type: "end process data",
         data,
