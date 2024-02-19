@@ -77,6 +77,7 @@ export default class State {
   }
 
   startProcessData(options) {
+    console.log('start process data', options);
     this.worker.postMessage({ type: 'start process data', options });
   }
 

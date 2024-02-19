@@ -1,10 +1,10 @@
 /* global CONFIG MODE */
-import React, { useContext, useEffect, useState } from 'react';
-import { render } from 'react-dom';
-import { observer } from 'mobx-react-lite';
-import levenSort from 'leven-sort';
-import _isUndefined from 'lodash/isUndefined';
-import _isPlainObject from 'lodash/isPlainObject';
+import React, { useContext, useEffect, useState } from "react";
+import { render } from "react-dom";
+import { observer } from "mobx-react-lite";
+import levenSort from "leven-sort";
+import _isUndefined from "lodash/isUndefined";
+import _isPlainObject from "lodash/isPlainObject";
 
 import {
   ClusteringStoreContext,
@@ -14,14 +14,15 @@ import {
   QueryStringStoreContext,
   UiStoreContext,
   VisualizationStoreContext,
-  WebworkerStoreContext
-} from 'store/stores';
-import VOSviewerApp from './VOSviewerApp';
-import DimensionsApp from './DimensionsApp';
-import ZetaAlphaApp from './ZetaAlphaApp';
-import RoRIApp from './RoRIApp';
+  WebworkerStoreContext,
+} from "store/stores";
+import VOSviewerApp from "./VOSviewerApp";
+import DimensionsApp from "./DimensionsApp";
+import ZetaAlphaApp from "./ZetaAlphaApp";
+import RoRIApp from "./RoRIApp";
+import { getBaseUrl } from "./pages/ZetaAlpha/utils";
 
-const root = document.createElement('div');
+const root = document.createElement("div");
 document.body.appendChild(root);
 
 const APP = observer(() => {
@@ -51,18 +52,18 @@ const APP = observer(() => {
       fileDataStore.getStyles(),
       fileDataStore.parameters,
       fileDataStore.getColorSchemes(),
-      fileDataStore.getClusters()
+      fileDataStore.getClusters(),
     );
 
     fileDataStore.setPreviousJsonData(jsonData);
-    const baseUrl = (origin.includes("localhost") || origin.includes("search-staging")) ? 'https://api-staging.zeta-alpha.com' : 'https://api.zeta-alpha.com';
+    const baseUrl = getBaseUrl(origin);
     const urlParams = new URLSearchParams(location.search);
-    const tenant = urlParams.get('tenant');
-    const tenantSuffix = tenant ? `?tenant=${tenant}` : '';
+    const tenant = urlParams.get("tenant");
+    const tenantSuffix = tenant ? `?tenant=${tenant}` : "";
     const newData = {
       url: `${baseUrl}/v0/service/documents/document/vos-cluster-titles${tenantSuffix}`,
-      method: 'POST',
-      body: JSON.stringify(jsonData)
+      method: "POST",
+      body: JSON.stringify(jsonData),
     };
 
     webworkerStore.openJsonFile(newData, false);
@@ -74,56 +75,70 @@ const APP = observer(() => {
   };
 
   const isAcceptableUrl = (url) => {
-    const accaptedOrigins = ['http://localhost:3000', 'http://localhost:8600', 'https://search-staging.zeta-alpha.com', 'https://search.zeta-alpha.com'];
+    const accaptedOrigins = [
+      "http://localhost:3000",
+      "http://localhost:8600",
+      "https://search-staging.zeta-alpha.com",
+      "https://search.zeta-alpha.com",
+    ];
     const prRegex = /https:\/\/search-staging-pr-\d+.zeta-alpha.com/g;
     const tenantRegex = /https:\/\/.+-search.zeta-alpha.com/g;
-    return accaptedOrigins.includes(url) || !!url.match(prRegex) || !!url.match(tenantRegex);
+    return (
+      accaptedOrigins.includes(url)
+      || !!url.match(prRegex)
+      || !!url.match(tenantRegex)
+    );
   };
 
   useEffect(() => {
-    window.addEventListener('message', (ev) => {
-      if (!isAcceptableUrl(ev.origin)) {
-        return;
-      }
-      if (ev.data === 'generate cluster titles') {
-        compute(ev.origin);
-      }
-      if (ev.data === 'go back to previous titles') {
-        handleGoBack();
-      }
-    }, false);
+    window.addEventListener(
+      "message",
+      (ev) => {
+        if (!isAcceptableUrl(ev.origin)) {
+          return;
+        }
+        if (ev.data === "generate cluster titles") {
+          compute(ev.origin);
+        }
+        if (ev.data === "go back to previous titles") {
+          handleGoBack();
+        }
+      },
+      false,
+    );
 
-
-    webworkerStore.addWorkerEventListener(d => {
+    webworkerStore.addWorkerEventListener((d) => {
       const { type, data } = d;
 
       // Replay worker messages into parent window for iframe --> page communication.
       window.parent.postMessage(JSON.stringify({ type, data }), "*");
       switch (type) {
-        case 'update loading screen':
+        case "update loading screen":
           uiStore.setLoadingScreenProcessType(data.processType);
-          uiStore.setLoadingScreenProgressValue(data.progressValue ? data.progressValue : 0);
+          uiStore.setLoadingScreenProgressValue(
+            data.progressValue ? data.progressValue : 0,
+          );
           uiStore.setLoadingScreenIsOpen(true);
           break;
-        case 'end parse vosviewer-json file':
-        case 'end parse vosviewer-map-network file': {
+        case "end parse vosviewer-json file":
+        case "end parse vosviewer-map-network file": {
           fileDataStore.init(data, configStore.uiStyle);
           if (!fileDataStore.fileError) {
             if (webworkerStore.resetParameters) {
               uiStore.updateStore({
                 parameters: {
-                  json: '',
-                  map: '',
-                  network: '',
+                  json: "",
+                  map: "",
+                  network: "",
                   item_color: configStore.parameters.item_color,
                   item_size: configStore.parameters.item_size,
                   show_item: configStore.parameters.show_item,
-                }
+                },
               });
               visualizationStore.updateStore({
                 parameters: {
-                  zoom_level: configStore.parameters.zoom_level
-                }
+                  zoom_level: configStore.parameters.zoom_level,
+                },
               });
             }
             if (_isPlainObject(fileDataStore.parameters)) {
@@ -131,45 +146,70 @@ const APP = observer(() => {
               uiStore.updateStore({ parameters: fileDataStore.parameters });
               visualizationStore.updateStore({
                 parameters: fileDataStore.parameters,
-                colorSchemes: fileDataStore.getColorSchemes()
+                colorSchemes: fileDataStore.getColorSchemes(),
               });
               layoutStore.updateStore({ parameters: fileDataStore.parameters });
-              clusteringStore.updateStore({ parameters: fileDataStore.parameters });
+              clusteringStore.updateStore({
+                parameters: fileDataStore.parameters,
+              });
             }
-            webworkerStore.startProcessData({ mapData: fileDataStore.mapData, networkData: fileDataStore.networkData });
+            webworkerStore.startProcessData({
+              mapData: fileDataStore.mapData,
+              networkData: fileDataStore.networkData,
+            });
           } else {
             uiStore.setErrorDialogIsOpen(true);
             uiStore.setLoadingScreenIsOpen(false);
           }
           break;
         }
-        case 'end process data':
-          webworkerStore.setRunLayout(fileDataStore.networkDataIsAvailable && !fileDataStore.coordinatesAreAvailable);
-          webworkerStore.setRunClustering(fileDataStore.networkDataIsAvailable && !fileDataStore.clustersAreAvailable);
+        case "end process data":
+          webworkerStore.setRunLayout(
+            fileDataStore.networkDataIsAvailable
+              && !fileDataStore.coordinatesAreAvailable,
+          );
+          webworkerStore.setRunClustering(
+            fileDataStore.networkDataIsAvailable
+              && !fileDataStore.clustersAreAvailable,
+          );
 
           visualizationStore.setItemIdToIndex(data.itemIdToIndex);
           if (!_isUndefined(visualizationStore.largestComponent)) {
             webworkerStore.startHandleUnconnectedItems({
-              unconnectedItemsDialogChoice: visualizationStore.largestComponent ? 'yes' : 'no',
+              unconnectedItemsDialogChoice: visualizationStore.largestComponent
+                ? "yes"
+                : "no",
               mapData: fileDataStore.mapData,
               networkData: fileDataStore.networkData,
-              itemIdToIndex: visualizationStore.itemIdToIndex
+              itemIdToIndex: visualizationStore.itemIdToIndex,
             });
-          } else if (!fileDataStore.coordinatesAreAvailable && data.hasUnconnectedItems) {
-            uiStore.setUnconnectedItemsDialog(data.hasUnconnectedItems, data.nItemsNetwork, data.nItemsLargestComponent);
+          } else if (
+            !fileDataStore.coordinatesAreAvailable
+            && data.hasUnconnectedItems
+          ) {
+            uiStore.setUnconnectedItemsDialog(
+              data.hasUnconnectedItems,
+              data.nItemsNetwork,
+              data.nItemsLargestComponent,
+            );
             uiStore.setUnconnectedItemsDialogIsOpen(true);
             uiStore.setLoadingScreenIsOpen(false);
           } else {
             webworkerStore.startHandleUnconnectedItems({
-              unconnectedItemsDialogChoice: 'no',
+              unconnectedItemsDialogChoice: "no",
               mapData: fileDataStore.mapData,
               networkData: fileDataStore.networkData,
-              itemIdToIndex: visualizationStore.itemIdToIndex
+              itemIdToIndex: visualizationStore.itemIdToIndex,
             });
           }
           break;
-        case 'end handle unconnected items':
-          if (data.mapData && data.networkData && data.itemIdToIndex && !fileDataStore.coordinatesAreAvailable) {
+        case "end handle unconnected items":
+          if (
+            data.mapData
+            && data.networkData
+            && data.itemIdToIndex
+            && !fileDataStore.coordinatesAreAvailable
+          ) {
             fileDataStore.setMapData(data.mapData);
             fileDataStore.setNetworkData(data.networkData);
             visualizationStore.setItemIdToIndex(data.itemIdToIndex);
@@ -184,7 +224,7 @@ const APP = observer(() => {
             _finalizeVisualization();
           }
           break;
-        case 'update run layout progress':
+        case "update run layout progress":
           if (layoutStore.canceled) {
             layoutStore.setCanceled(false);
             _finalizeVisualization();
@@ -193,7 +233,7 @@ const APP = observer(() => {
           uiStore.setLoadingScreenProgressValue(data.progressValue);
           webworkerStore.continueRunLayout();
           break;
-        case 'update run clustering progress':
+        case "update run clustering progress":
           if (clusteringStore.canceled) {
             clusteringStore.setCanceled(false);
             _finalizeVisualization();
@@ -202,7 +242,7 @@ const APP = observer(() => {
           uiStore.setLoadingScreenProgressValue(data.progressValue);
           webworkerStore.continueRunClustering();
           break;
-        case 'end run layout':
+        case "end run layout":
           uiStore.setLoadingScreenProgressValue(100);
           visualizationStore.setLayout(data.bestLayout.coordinate);
           uiStore.setLoadingScreenIsOpen(false);
@@ -212,9 +252,12 @@ const APP = observer(() => {
             _finalizeVisualization();
           }
           break;
-        case 'end run clustering':
+        case "end run clustering":
           uiStore.setLoadingScreenProgressValue(100);
-          visualizationStore.setClusters(data.bestClustering, uiStore.darkTheme);
+          visualizationStore.setClusters(
+            data.bestClustering,
+            uiStore.darkTheme,
+          );
           uiStore.setLoadingScreenIsOpen(false);
           _finalizeVisualization();
           break;
@@ -225,41 +268,89 @@ const APP = observer(() => {
   }, []);
 
   function _initVisualization() {
-    visualizationStore.init(fileDataStore.mapData, fileDataStore.networkData, fileDataStore.terminology);
+    visualizationStore.init(
+      fileDataStore.mapData,
+      fileDataStore.networkData,
+      fileDataStore.terminology,
+    );
 
-    const itemSizeDefinedInConfig = !_isUndefined(configStore.parameters.item_size);
-    const itemSizeProvidedInQueryString = !_isUndefined(queryStringStore.parameters.item_size);
-    const itemSizeProvidedInFile = _isPlainObject(fileDataStore.parameters) && !_isUndefined(fileDataStore.parameters.item_size);
-    const sizeIndex = ((!itemSizeDefinedInConfig && webworkerStore.resetParameters && !itemSizeProvidedInFile) || (!itemSizeDefinedInConfig && !webworkerStore.resetParameters && !itemSizeProvidedInQueryString && !itemSizeProvidedInFile)) ? visualizationStore.weightIndex : uiStore.sizeIndex;
+    const itemSizeDefinedInConfig = !_isUndefined(
+      configStore.parameters.item_size,
+    );
+    const itemSizeProvidedInQueryString = !_isUndefined(
+      queryStringStore.parameters.item_size,
+    );
+    const itemSizeProvidedInFile = _isPlainObject(fileDataStore.parameters)
+      && !_isUndefined(fileDataStore.parameters.item_size);
+    const sizeIndex = (!itemSizeDefinedInConfig
+        && webworkerStore.resetParameters
+        && !itemSizeProvidedInFile)
+      || (!itemSizeDefinedInConfig
+        && !webworkerStore.resetParameters
+        && !itemSizeProvidedInQueryString
+        && !itemSizeProvidedInFile)
+        ? visualizationStore.weightIndex
+        : uiStore.sizeIndex;
     const weightIndex = sizeIndex;
     visualizationStore.updateWeights(weightIndex);
 
-    const itemColorDefinedInConfig = !_isUndefined(configStore.parameters.item_color);
-    const itemColorProvidedInQueryString = !_isUndefined(queryStringStore.parameters.item_color);
-    const itemColorProvidedInFile = _isPlainObject(fileDataStore.parameters) && !_isUndefined(fileDataStore.parameters.item_color);
-    const colorIndex = ((!itemColorDefinedInConfig && webworkerStore.resetParameters && !itemSizeProvidedInFile) || (!itemColorDefinedInConfig && !webworkerStore.resetParameters && !itemColorProvidedInQueryString && !itemColorProvidedInFile)) ? 0 : uiStore.colorIndex;
+    const itemColorDefinedInConfig = !_isUndefined(
+      configStore.parameters.item_color,
+    );
+    const itemColorProvidedInQueryString = !_isUndefined(
+      queryStringStore.parameters.item_color,
+    );
+    const itemColorProvidedInFile = _isPlainObject(fileDataStore.parameters)
+      && !_isUndefined(fileDataStore.parameters.item_color);
+    const colorIndex = (!itemColorDefinedInConfig
+        && webworkerStore.resetParameters
+        && !itemSizeProvidedInFile)
+      || (!itemColorDefinedInConfig
+        && !webworkerStore.resetParameters
+        && !itemColorProvidedInQueryString
+        && !itemColorProvidedInFile)
+        ? 0
+        : uiStore.colorIndex;
     const scoreIndex = colorIndex - 1;
     if (colorIndex > 0) visualizationStore.updateScores(scoreIndex);
 
     visualizationStore.updateItemPixelPositionAndScaling();
-    visualizationStore.updateItemFontSizeAndCircleSize(uiStore.scale, uiStore.itemSizeVariation, uiStore.maxLabelLength, configStore.uiStyle.font_family);
-    visualizationStore.updateLinkLineWidth(uiStore.scale, uiStore.linkSizeVariation);
+    visualizationStore.updateItemFontSizeAndCircleSize(
+      uiStore.scale,
+      uiStore.itemSizeVariation,
+      uiStore.maxLabelLength,
+      configStore.uiStyle.font_family,
+    );
+    visualizationStore.updateLinkLineWidth(
+      uiStore.scale,
+      uiStore.linkSizeVariation,
+    );
 
     uiStore.setSizeIndex(visualizationStore.weightIndex);
-    uiStore.setColorIndex((visualizationStore.scoreIndex === scoreIndex) ? colorIndex : 0);
+    uiStore.setColorIndex(
+      visualizationStore.scoreIndex === scoreIndex ? colorIndex : 0,
+    );
   }
 
   function _finalizeVisualization() {
     visualizationStore.updateData();
     visualizationStore.updateZoomLevel();
     if (uiStore.showItem) _showItem();
-    configStore.setUrlPreviewPanelIsOpen(visualizationStore.itemsOrLinksWithUrl);
+    configStore.setUrlPreviewPanelIsOpen(
+      visualizationStore.itemsOrLinksWithUrl,
+    );
     uiStore.setLoadingScreenIsOpen(false);
   }
 
   function _showItem() {
-    const filteredItems = visualizationStore.items.filter(item => item.label.toLowerCase().indexOf(uiStore.showItem.toLowerCase()) !== -1);
-    const sortedItems = levenSort(filteredItems, uiStore.showItem.toLowerCase(), 'label');
+    const filteredItems = visualizationStore.items.filter(
+      (item) => item.label.toLowerCase().indexOf(uiStore.showItem.toLowerCase()) !== -1,
+    );
+    const sortedItems = levenSort(
+      filteredItems,
+      uiStore.showItem.toLowerCase(),
+      "label",
+    );
     const foundItem = sortedItems[0];
     if (foundItem) {
       setTimeout(() => {
@@ -269,19 +360,17 @@ const APP = observer(() => {
         }
       }, 500);
     }
-    uiStore.setShowItem('');
+    uiStore.setShowItem("");
   }
 
   return (
     <>
-      {MODE === 'vosviewer' && <VOSviewerApp />}
-      {MODE === 'dimensions' && <DimensionsApp />}
-      {MODE === 'zetaalpha' && <ZetaAlphaApp />}
-      {MODE === 'rori' && <RoRIApp />}
+      {MODE === "vosviewer" && <VOSviewerApp />}
+      {MODE === "dimensions" && <DimensionsApp />}
+      {MODE === "zetaalpha" && <ZetaAlphaApp />}
+      {MODE === "rori" && <RoRIApp />}
     </>
   );
 });
-render(
-  <APP />,
-  root
-);
+
+render(<APP />, root);
