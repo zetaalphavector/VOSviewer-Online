@@ -19,7 +19,7 @@ export const getBaseUrl = (origin) => {
 
   const domain = url.hostname.includes("localhost")
     ? "zeta-alpha.com"
-    : url.hostname;
+    : url.hostname.split(".").slice(-2).join(".");
 
   const protocol = url.hostname.includes("localhost") ? "https:" : url.protocol;
 
