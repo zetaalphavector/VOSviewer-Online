@@ -20,7 +20,7 @@ import VOSviewerApp from "./VOSviewerApp";
 import DimensionsApp from "./DimensionsApp";
 import ZetaAlphaApp from "./ZetaAlphaApp";
 import RoRIApp from "./RoRIApp";
-import { getBaseUrl } from "./pages/ZetaAlpha/utils";
+import { getBaseUrl, isAcceptableUrl } from "./pages/ZetaAlpha/utils";
 
 const root = document.createElement("div");
 document.body.appendChild(root);
@@ -72,22 +72,6 @@ const APP = observer(() => {
   const handleGoBack = () => {
     const oldData = fileDataStore.getPreviousJsonData();
     webworkerStore.openJsonFile(oldData, false);
-  };
-
-  const isAcceptableUrl = (url) => {
-    const accaptedOrigins = [
-      "http://localhost:3000",
-      "http://localhost:8600",
-      "https://search-staging.zeta-alpha.com",
-      "https://search.zeta-alpha.com",
-    ];
-    const prRegex = /https:\/\/search-staging-pr-\d+.zeta-alpha.com/g;
-    const tenantRegex = /https:\/\/.+-search.zeta-alpha.com/g;
-    return (
-      accaptedOrigins.includes(url)
-      || !!url.match(prRegex)
-      || !!url.match(tenantRegex)
-    );
   };
 
   useEffect(() => {
