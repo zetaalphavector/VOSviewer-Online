@@ -1,6 +1,6 @@
 /* eslint-disable import/no-webpack-loader-syntax */
 /* eslint-disable import/no-unresolved */
-import Worker from 'worker-loader!workers/worker';
+import Worker from "worker-loader!workers/worker";
 
 export default class State {
   constructor() {
@@ -38,7 +38,7 @@ export default class State {
     this.loadNewData = true;
     this.runLayout = false;
     this.runClustering = false;
-    const authToken = localStorage.getItem('token');
+    const authToken = localStorage.getItem("token");
     this.startParseJsonFile({ jsonFileOrUrl, authToken });
   }
 
@@ -51,7 +51,10 @@ export default class State {
   }
 
   updateNormalization(normalizationMethod) {
-    this.worker.postMessage({ type: 'normalize network', options: { normalizationMethod } });
+    this.worker.postMessage({
+      type: "normalize network",
+      options: { normalizationMethod },
+    });
   }
 
   updateLayout(layoutParameters) {
@@ -69,34 +72,43 @@ export default class State {
   }
 
   startParseJsonFile(options) {
-    this.worker.postMessage({ type: 'start parse vosviewer-json file', options });
+    this.worker.postMessage({
+      type: "start parse vosviewer-json file",
+      options,
+    });
   }
 
   startParseMapNetworkFile(options) {
-    this.worker.postMessage({ type: 'start parse vosviewer-map-network file', options });
+    this.worker.postMessage({
+      type: "start parse vosviewer-map-network file",
+      options,
+    });
   }
 
   startProcessData(options) {
-    this.worker.postMessage({ type: 'start process data', options });
+    this.worker.postMessage({ type: "start process data", options });
   }
 
   startHandleUnconnectedItems(options) {
-    this.worker.postMessage({ type: 'start handle unconnected items', options });
+    this.worker.postMessage({
+      type: "start handle unconnected items",
+      options,
+    });
   }
 
   startRunLayout(options) {
-    this.worker.postMessage({ type: 'start run layout', options });
+    this.worker.postMessage({ type: "start run layout", options });
   }
 
   continueRunLayout() {
-    this.worker.postMessage({ type: 'continue run layout' });
+    this.worker.postMessage({ type: "continue run layout" });
   }
 
   startRunClustering(options) {
-    this.worker.postMessage({ type: 'start run clustering', options });
+    this.worker.postMessage({ type: "start run clustering", options });
   }
 
   continueRunClustering() {
-    this.worker.postMessage({ type: 'continue run clustering' });
+    this.worker.postMessage({ type: "continue run clustering" });
   }
 }
