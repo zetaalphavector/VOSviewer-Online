@@ -172,6 +172,7 @@ export const parameterKeys = {
   // Data.
   JSON: 'json',
   AUTH_TOKEN: 'auth_token',
+  HOSTNAME: 'hostname',
   MAP: 'map',
   NETWORK: 'network',
   // Layout and clustering.
