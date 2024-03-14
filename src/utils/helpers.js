@@ -29,6 +29,7 @@ export function parseQueryString(queryString) {
     switch (key) {
       // Data.
       case parameterKeys.AUTH_TOKEN:
+      case parameterKeys.HOSTNAME:
       case parameterKeys.JSON:
       case parameterKeys.MAP:
       case parameterKeys.NETWORK:
