@@ -20,7 +20,7 @@ export const getBaseUrl = (origin) => {
 
   const domain = url.hostname.includes("localhost")
     ? "zeta-alpha.com"
-    : url.hostname.split(".").slice(1).join(".");
+    : (url.hostname.split(".").length > 2 ? url.hostname.split(".").slice(1).join(".") : url.hostname);
 
   const protocol = url.hostname.includes("localhost") ? "https:" : url.protocol;
 
@@ -41,3 +41,5 @@ export const isAcceptableUrl = (url) => {
 
   return subdomain === "search" || subdomain.endsWith("-search");
 };
+
+
