@@ -15,8 +15,8 @@ export const getBaseUrl = (origin) => {
 
   const api = url.hostname.includes("localhost")
     || url.hostname.includes("search-staging")
-    ? "api-staging"
-    : "api";
+      ? "api-staging"
+      : "api";
 
   const domain = url.hostname.includes("localhost")
     ? "zeta-alpha.com"
