@@ -2,6 +2,7 @@
 prod:
 domain: https://search.zeta-alpha.com/, api: https://api.zeta-alpha.com/
 domain: https://xxx.com/, api: https://api.xxx.com/
+domain: https://search.zetaalpha-poc.xxx.net/, api: https://api.zetaalpha-poc.xxx.net/
 stages:
 domain: https://search-staging.zeta-alpha.com/, api: https://api-staging.zeta-alpha.com
 domain: https://search-staging-pr-XXX.zeta-alpha.com/, api: https://api-staging.zeta-alpha.com
@@ -14,12 +15,12 @@ export const getBaseUrl = (origin) => {
 
   const api = url.hostname.includes("localhost")
     || url.hostname.includes("search-staging")
-      ? "api-staging"
-      : "api";
+    ? "api-staging"
+    : "api";
 
   const domain = url.hostname.includes("localhost")
     ? "zeta-alpha.com"
-    : url.hostname.split(".").slice(-2).join(".");
+    : url.hostname.split(".").slice(1).join(".");
 
   const protocol = url.hostname.includes("localhost") ? "https:" : url.protocol;
 
