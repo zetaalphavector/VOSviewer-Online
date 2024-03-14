@@ -33,7 +33,7 @@ self.addEventListener("message", (event) => {
       networkNormalizer.performNormalization(options.normalizationMethod);
       break;
     case "start parse vosviewer-json file":
-      _parseJsonFile(options.jsonFileOrUrl, options.authToken, options.authTokenMap);
+      _parseJsonFile(options.jsonFileOrUrl, options.authToken, options.hostname);
       break;
     case "start parse vosviewer-map-network file":
       _parseMapNetworkFile(options.mapFileOrUrl, options.networkFileOrUrl);
@@ -255,7 +255,7 @@ function _parseJsonFile(jsonFileOrUrl, authToken, hostname) {
     } else if (jsonFileOrUrl instanceof Object && !jsonFileOrUrl.url) {
       _parseJson(jsonFileOrUrl);
     } else {
-      const urlHostname = new URL(jsonFileOrUrl.url).hostname;
+      const urlHostname = new URL(jsonFileOrUrl).hostname;
       const urlHostNameSuffix = urlHostname.split(".").slice(1).join(".");
       const allowedHostnameSuffix = hostname.split(".").slice(1).join(".");
       fetch(jsonFileOrUrl, {
