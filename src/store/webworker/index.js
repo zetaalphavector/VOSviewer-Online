@@ -39,7 +39,8 @@ export default class State {
     this.runLayout = false;
     this.runClustering = false;
     const authToken = localStorage.getItem("token");
-    this.startParseJsonFile({ jsonFileOrUrl, authToken });
+    const hostname = localStorage.getItem("hostname");
+    this.startParseJsonFile({ jsonFileOrUrl, authToken, hostname });
   }
 
   openMapNetworkFile(mapFileOrUrl, networkFileOrUrl, resetParameters = false) {

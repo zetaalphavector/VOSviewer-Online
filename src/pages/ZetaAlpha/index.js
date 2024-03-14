@@ -70,6 +70,12 @@ const ZetaAlpha = observer(({ queryString }) => {
     } else {
       window.localStorage.removeItem("token");
     }
+    const hostname = queryString[parameterKeys.HOSTNAME];
+    if (hostname) {
+      window.localStorage.setItem("hostname", hostname);
+    } else {
+      window.localStorage.removeItem("hostname");
+    }
     if (NODE_ENV === "development" && !mapURL && !networkURL && !jsonURL) {
       jsonURL = "data/Zeta-Alpha_ICLR2021.json";
     } else if (!mapURL && !networkURL && !jsonURL) {

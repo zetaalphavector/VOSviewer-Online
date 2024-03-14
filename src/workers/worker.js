@@ -33,7 +33,7 @@ self.addEventListener("message", (event) => {
       networkNormalizer.performNormalization(options.normalizationMethod);
       break;
     case "start parse vosviewer-json file":
-      _parseJsonFile(options.jsonFileOrUrl, options.authToken);
+      _parseJsonFile(options.jsonFileOrUrl, options.authToken, options.authTokenMap);
       break;
     case "start parse vosviewer-map-network file":
       _parseMapNetworkFile(options.mapFileOrUrl, options.networkFileOrUrl);
@@ -70,8 +70,8 @@ self.addEventListener("message", (event) => {
     }
     case "start handle unconnected items": {
       const itemsToShow = options.unconnectedItemsDialogChoice === "yes"
-          ? _removeUnconnectedItems(networkNormalizer.getNetworkComponents(), 0)
-          : undefined;
+        ? _removeUnconnectedItems(networkNormalizer.getNetworkComponents(), 0)
+        : undefined;
       if (itemsToShow) {
         const filteredMapData = options.mapData.filter((d, i) => itemsToShow.includes(i),);
         const filteredNetworkData = options.networkData.filter(
@@ -195,7 +195,7 @@ self.addEventListener("message", (event) => {
   }
 });
 
-function _parseJsonFile(jsonFileOrUrl, authToken) {
+function _parseJsonFile(jsonFileOrUrl, authToken, hostname) {
   if (jsonFileOrUrl) {
     self.postMessage({
       type: "update loading screen",
@@ -218,8 +218,11 @@ function _parseJsonFile(jsonFileOrUrl, authToken) {
         });
       };
     } else if (jsonFileOrUrl instanceof Object && jsonFileOrUrl.url) {
+      const urlHostname = new URL(jsonFileOrUrl.url).hostname;
+      const urlHostNameSuffix = urlHostname.split(".").slice(1).join(".");
+      const allowedHostnameSuffix = hostname.split(".").slice(1).join(".");
       fetch(jsonFileOrUrl.url, {
-        ...(!!authToken && jsonFileOrUrl.url.includes("zeta-alpha.com")
+        ...(!!authToken && urlHostNameSuffix === allowedHostnameSuffix
           ? { headers: { Authorization: `Bearer ${authToken}` } }
           : {}),
         credentials: "include",
@@ -252,8 +255,11 @@ function _parseJsonFile(jsonFileOrUrl, authToken) {
     } else if (jsonFileOrUrl instanceof Object && !jsonFileOrUrl.url) {
       _parseJson(jsonFileOrUrl);
     } else {
+      const urlHostname = new URL(jsonFileOrUrl.url).hostname;
+      const urlHostNameSuffix = urlHostname.split(".").slice(1).join(".");
+      const allowedHostnameSuffix = hostname.split(".").slice(1).join(".");
       fetch(jsonFileOrUrl, {
-        ...(!!authToken && jsonFileOrUrl.includes("zeta-alpha.com")
+        ...(!!authToken && urlHostNameSuffix === allowedHostnameSuffix
           ? { headers: { Authorization: `Bearer ${authToken}` } }
           : {}),
         credentials: "include",
