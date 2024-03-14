@@ -41,5 +41,3 @@ export const isAcceptableUrl = (url) => {
 
   return subdomain === "search" || subdomain.endsWith("-search");
 };
-
-
