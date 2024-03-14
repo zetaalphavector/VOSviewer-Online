@@ -29,7 +29,7 @@ export const getBaseUrl = (origin) => {
 
 const getSubdomain = (url) => {
   const { hostname } = new URL(url);
-  return hostname.split(".").slice(0, -2).pop();
+  return hostname.split(".").slice(0, 1).pop();
 };
 
 export const isAcceptableUrl = (url) => {
@@ -39,5 +39,5 @@ export const isAcceptableUrl = (url) => {
 
   const subdomain = getSubdomain(url);
 
-  return subdomain === "search" || subdomain.endsWith("-search");
+  return subdomain === "search" || subdomain.endsWith("-search") || subdomain.startsWith("search-");
 };
