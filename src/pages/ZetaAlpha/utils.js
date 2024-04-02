@@ -38,5 +38,5 @@ export const isAcceptableUrl = (url) => {
 
   const subdomain = getSubdomain(url);
 
-  return subdomain === "search" || subdomain.endsWith("-search");
+  return subdomain === 'zav-vos-viewer' || subdomain === "search" || subdomain.endsWith("-search") || subdomain.startsWith("search-");
 };
