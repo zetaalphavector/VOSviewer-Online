@@ -9,8 +9,8 @@ export const previewIsOpen = css`
 export const zoomPanel = (previewPanelWidth) => css`
   label: zoom-panel;
   position: absolute;
-  top: 50%;
-  right: ${panelMargin}px;
+  top: 98px;
+  right: ${panelMargin - 6}px;
   transform: translateY(-50%);
 
   &${`.${previewIsOpen}`} {

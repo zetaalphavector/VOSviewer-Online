@@ -24,11 +24,6 @@ const Find = observer(() => {
     [debouncedText]
   );
 
-  useEffect(
-    () => {},
-    [visualizationStore.lastDataUpdate]
-  );
-
   const changeItemFilterText = (itemFilterText) => {
     setItemFilterText(itemFilterText);
   };

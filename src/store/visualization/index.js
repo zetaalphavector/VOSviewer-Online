@@ -704,6 +704,8 @@ export default class State {
     if (this.clickedItem) this.clickedLink = undefined;
     this.updateVisualization(dimmingIsEnabled);
     if (dimmingIsEnabled) this._clearHighlightedItemTimer();
+    // TODO: Add scroll to the top
+    this.zoomTo(this.clickedItem);
   }
 
   updateClickedLink(link, dimmingIsEnabled = false) {
