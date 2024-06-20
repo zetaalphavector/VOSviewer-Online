@@ -11,11 +11,11 @@ export const DynamicArticle = ({ item }) => {
   } = item;
 
   let imageContentUrl = null;
-  if (image && image.includes("document-assets")) {
+  if (image && image.includes("document-assets") && !image.includes("/content")) {
     imageContentUrl = image.includes('?') ? image.replace('?', '/content?') : `${image}/content`;
   }
   let logoUrl = null;
-  if (logo && logo.includes("document-assets")) {
+  if (logo && logo.includes("document-assets") && !image.includes("/content")) {
     logoUrl = logo.includes('?') ? logo.replace('?', '/content?') : `${logo}/content`;
   }
 
