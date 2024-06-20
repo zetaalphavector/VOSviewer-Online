@@ -10,8 +10,14 @@ export const DynamicArticle = ({ item }) => {
     img_url: imgUrl, heading, uri, authors, title, abstract, image_url: image, logo_url: logo, source
   } = item;
 
-  const imageContentUrl = `${image}/content`;
-  const logoUrl = `${logo}/content`;
+  let imageContentUrl = null;
+  if (image && image.includes("document-assets")) {
+    imageContentUrl = image.includes('?') ? image.replace('?', '/content?') : `${image}/content`;
+  }
+  let logoUrl = null;
+  if (logo && logo.includes("document-assets")) {
+    logoUrl = logo.includes('?') ? logo.replace('?', '/content?') : `${logo}/content`;
+  }
 
   const initials = useMemo(
     () => getInitialsFromName(authors?.[0]?.fullName),
