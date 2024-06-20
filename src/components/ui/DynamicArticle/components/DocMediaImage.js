@@ -1,24 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AdaptiveImage } from "./AdaptiveImage";
-import { useResource } from "../hooks/useResource";
 
 export const DocMediaImage = ({
   image,
   fallback,
   alt
 }) => {
-  const { abort, data, isLoading, error } = useResource(image);
-
-  useEffect(() => () => abort(), []);
-
-  const src = data?.download_url ?? fallback;
+  const src = image ?? fallback;
 
   return (
     <AdaptiveImage
       src={src}
       fallback={fallback}
-      isLoading={isLoading}
-      error={error}
       al={alt}
     />
   );
