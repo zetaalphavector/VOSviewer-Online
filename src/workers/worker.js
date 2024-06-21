@@ -220,9 +220,9 @@ function _parseJsonFile(jsonFileOrUrl, authToken, hostname) {
     } else if (jsonFileOrUrl instanceof Object && jsonFileOrUrl.url) {
       const urlHostname = new URL(jsonFileOrUrl.url).hostname;
       const urlHostNameSuffix = urlHostname.split(".").slice(1).join(".");
-      const allowedHostnameSuffix = hostname.split(".").slice(1).join(".");
+      const allowedHostnameSuffix = hostname ? hostname.split(".").slice(1).join(".") : null;
       fetch(jsonFileOrUrl.url, {
-        ...(!!authToken && urlHostNameSuffix === allowedHostnameSuffix
+        ...(!!authToken && !!allowedHostnameSuffix && urlHostNameSuffix === allowedHostnameSuffix
           ? { headers: { Authorization: `Bearer ${authToken}` } }
           : {}),
         credentials: "include",
@@ -257,9 +257,9 @@ function _parseJsonFile(jsonFileOrUrl, authToken, hostname) {
     } else {
       const urlHostname = new URL(jsonFileOrUrl).hostname;
       const urlHostNameSuffix = urlHostname.split(".").slice(1).join(".");
-      const allowedHostnameSuffix = hostname.split(".").slice(1).join(".");
+      const allowedHostnameSuffix = hostname ? hostname.split(".").slice(1).join(".") : null;
       fetch(jsonFileOrUrl, {
-        ...(!!authToken && urlHostNameSuffix === allowedHostnameSuffix
+        ...(!!authToken && !!allowedHostnameSuffix && urlHostNameSuffix === allowedHostnameSuffix
           ? { headers: { Authorization: `Bearer ${authToken}` } }
           : {}),
         credentials: "include",
