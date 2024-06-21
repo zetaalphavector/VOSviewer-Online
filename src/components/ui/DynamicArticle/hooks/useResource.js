@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { attachmentApi } from "../../../../api/api";
+import { isAcceptableBackend } from "../../../../pages/ZetaAlpha/utils";
 
 export const useAttachmentResource = (url) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,9 @@ export const useAttachmentResource = (url) => {
       const _controller = new AbortController();
       setController(_controller);
       const { signal } = _controller;
+      if (!isAcceptableBackend(url)) {
+        return;
+      }
       const data = await attachmentApi(url, { signal });
       setData(data);
     } catch (error) {

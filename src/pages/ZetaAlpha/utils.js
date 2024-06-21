@@ -15,8 +15,8 @@ export const getBaseUrl = (origin) => {
 
   const api = url.hostname.includes("localhost")
     || url.hostname.includes("search-staging")
-      ? "api-staging"
-      : "api";
+    ? "api-staging"
+    : "api";
 
   const domain = url.hostname.includes("localhost")
     ? "zeta-alpha.com"
@@ -41,3 +41,5 @@ export const isAcceptableUrl = (url) => {
 
   return subdomain === "search" || subdomain.endsWith("-search") || subdomain.startsWith("search-");
 };
+
+export const isAcceptableBackend = (url) => (url.includes("api-staging.") || url.includes("api.")) && (url.includes("zeta-alpha") || url.includes("zetaalpha"));
