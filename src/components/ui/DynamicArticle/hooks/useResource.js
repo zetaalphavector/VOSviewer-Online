@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { api } from "../../../../api/api";
+import { attachmentApi } from "../../../../api/api";
 
-export const useResource = (url) => {
+export const useAttachmentResource = (url) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
@@ -30,7 +30,7 @@ export const useResource = (url) => {
       const _controller = new AbortController();
       setController(_controller);
       const { signal } = _controller;
-      const data = await api(url, { signal });
+      const data = await attachmentApi(url, { signal });
       setData(data);
     } catch (error) {
       setError(error);

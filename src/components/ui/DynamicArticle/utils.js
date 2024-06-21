@@ -4,6 +4,7 @@ import arxiv from 'assets/images/arxiv-logo.png';
 import neurips from 'assets/images/neurips-logo.png';
 import citation from 'assets/images/citation-source.png';
 import noImg from 'assets/images/no-img-source.png';
+import { Buffer } from 'buffer';
 
 export const getPaperImgDimensions = (
   { width: wrapperWidth },
@@ -48,3 +49,5 @@ export const ImagesMap = {
 export const DEFAULT_IMAGE = ImagesMap.Default;
 
 export const getPaperImgBySource = (source) => ImagesMap[source] ?? DEFAULT_IMAGE;
+
+export const toBase64 = (data) => Buffer.from(data).toString('base64');
