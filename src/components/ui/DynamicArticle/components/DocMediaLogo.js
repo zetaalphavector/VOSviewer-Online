@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import * as styles from "../styles";
 import { AdaptiveImage } from "./AdaptiveImage";
+import { useResource } from "../hooks/useResource";
 
 export const DocMediaLogo = ({
   logo,
@@ -8,12 +9,18 @@ export const DocMediaLogo = ({
   initials,
   alt
 }) => {
-  const src = logo ?? fallback;
+  const { abort, data, isLoading, error } = useResource(logo);
+
+  useEffect(() => () => abort(), []);
+
+  const src = data ?? fallback;
 
   return (
     <AdaptiveImage
       src={src}
       fallback={fallback}
+      isLoading={isLoading}
+      error={error}
       alt={alt}
     >
       {initials && (
