@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { toBase64 } from "../utils";
 import { attachmentApi } from "../../../../api/api";
 import { isAcceptableBackend } from "../../../../pages/ZetaAlpha/utils";
 
@@ -52,10 +53,15 @@ export const useAttachmentResource = (url) => {
     }
   }, [url]);
 
+  let src;
+  if (data) {
+    const base64Content = toBase64(data.content);
+    src = `data:${data.contentType};base64,${base64Content}` ?? undefined;
+  }
   return {
     abort,
     isLoading,
     error,
-    data,
+    src,
   };
 };
