@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { api } from "../../../../api/api";
+import { toBase64 } from "../utils";
+import { attachmentApi } from "../../../../api/api";
+import { isAcceptableBackendUrl, isAcceptableOrigin } from "../../../../pages/ZetaAlpha/utils";
 
-export const useResource = (url) => {
+export const useAttachmentResource = (url) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
@@ -30,7 +32,7 @@ export const useResource = (url) => {
       const _controller = new AbortController();
       setController(_controller);
       const { signal } = _controller;
-      const data = await api(url, { signal });
+      const data = await attachmentApi(url, { signal });
       setData(data);
     } catch (error) {
       setError(error);
@@ -40,7 +42,7 @@ export const useResource = (url) => {
   };
 
   useEffect(() => {
-    if (url) {
+    if (url && isAcceptableOrigin(window.location.origin) && isAcceptableBackendUrl(url, window.location.origin)) {
       start();
       load();
     } else {
@@ -48,10 +50,15 @@ export const useResource = (url) => {
     }
   }, [url]);
 
+  let src;
+  if (data) {
+    const base64Content = toBase64(data.content);
+    src = `data:${data.contentType};base64,${base64Content}` ?? undefined;
+  }
   return {
     abort,
     isLoading,
     error,
-    data,
+    src,
   };
 };

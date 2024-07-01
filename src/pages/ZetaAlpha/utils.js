@@ -15,8 +15,8 @@ export const getBaseUrl = (origin) => {
 
   const api = url.hostname.includes("localhost")
     || url.hostname.includes("search-staging")
-      ? "api-staging"
-      : "api";
+    ? "api-staging"
+    : "api";
 
   const domain = url.hostname.includes("localhost")
     ? "zeta-alpha.com"
@@ -32,12 +32,17 @@ const getSubdomain = (url) => {
   return hostname.split(".").slice(0, 1).pop();
 };
 
-export const isAcceptableUrl = (url) => {
-  if (url.includes("localhost:")) {
+export const isAcceptableOrigin = (origin) => {
+  if (origin.includes("localhost:")) {
     return true;
   }
 
-  const subdomain = getSubdomain(url);
+  const subdomain = getSubdomain(origin);
 
   return subdomain === "search" || subdomain.endsWith("-search") || subdomain.startsWith("search-");
+};
+
+export const isAcceptableBackendUrl = (url, origin) => {
+  const originBaseUrl = getBaseUrl(origin);
+  return url.startsWith(originBaseUrl);
 };
