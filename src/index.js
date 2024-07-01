@@ -20,7 +20,7 @@ import VOSviewerApp from "./VOSviewerApp";
 import DimensionsApp from "./DimensionsApp";
 import ZetaAlphaApp from "./ZetaAlphaApp";
 import RoRIApp from "./RoRIApp";
-import { getBaseUrl, isAcceptableUrl } from "./pages/ZetaAlpha/utils";
+import { getBaseUrl, isAcceptableOrigin } from "./pages/ZetaAlpha/utils";
 
 const root = document.createElement("div");
 document.body.appendChild(root);
@@ -78,7 +78,7 @@ const APP = observer(() => {
     window.addEventListener(
       "message",
       (ev) => {
-        if (!isAcceptableUrl(ev.origin)) {
+        if (!isAcceptableOrigin(ev.origin)) {
           return;
         }
         if (ev.data === "generate cluster titles") {

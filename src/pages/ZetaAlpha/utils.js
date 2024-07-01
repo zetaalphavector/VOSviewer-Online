@@ -32,14 +32,17 @@ const getSubdomain = (url) => {
   return hostname.split(".").slice(0, 1).pop();
 };
 
-export const isAcceptableUrl = (url) => {
-  if (url.includes("localhost:")) {
+export const isAcceptableOrigin = (origin) => {
+  if (origin.includes("localhost:")) {
     return true;
   }
 
-  const subdomain = getSubdomain(url);
+  const subdomain = getSubdomain(origin);
 
   return subdomain === "search" || subdomain.endsWith("-search") || subdomain.startsWith("search-");
 };
 
-export const isAcceptableBackend = (url) => (url.includes("api-staging.") || url.includes("api.")) && (url.includes("zeta-alpha") || url.includes("zetaalpha"));
+export const isAcceptableBackendUrl = (url, origin) => {
+  const originBaseUrl = getBaseUrl(origin);
+  return url.startsWith(originBaseUrl);
+};
