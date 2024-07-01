@@ -10,11 +10,11 @@ export const DynamicArticle = ({ item }) => {
     img_url: imgUrl, heading, uri, authors, title, abstract, image_url: image, logo_url: logo, source
   } = item;
 
-  let imageContentUrl = null;
+  let imageContentUrl = image;
   if (image && image.includes("document-assets") && !image.includes("/content")) {
     imageContentUrl = image.includes('?') ? image.replace('?', '/content?') : `${image}/content`;
   }
-  let logoUrl = null;
+  let logoUrl = logo;
   if (logo && logo.includes("document-assets") && !image.includes("/content")) {
     logoUrl = logo.includes('?') ? logo.replace('?', '/content?') : `${logo}/content`;
   }
