@@ -42,7 +42,7 @@ export const useAttachmentResource = (url) => {
   };
 
   useEffect(() => {
-    if (url && isAcceptableOrigin(window.Location.origin) && isAcceptableBackendUrl(url, window.location.origin)) {
+    if (url && isAcceptableOrigin(window.location.origin) && isAcceptableBackendUrl(url, window.location.origin)) {
       start();
       load();
     } else {
